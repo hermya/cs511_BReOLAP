@@ -1,0 +1,101 @@
+Portfolio Performance Analysis
+1.
+SELECT 
+    Date,
+    SUM(PortfolioValue) AS TotalPortfolioValue,
+    AVG(Return) AS AverageDailyReturn,
+    MAX(Return) AS MaxDailyReturn,
+    MIN(Return) AS MinDailyReturn
+FROM 
+    PortfolioPerformance
+GROUP BY 
+    Date
+ORDER BY 
+    Date DESC
+LIMIT 
+    30;
+
+Table 1 - portfolio_generator.py
+Portfolio 
+(asset_id auto-incremented-int,
+ asset_uuid UUID,
+ asset_name (Bitcoin/Google/My_building),
+ asset_class (Crypto, Stocks, ETFs, NFTs, Gold Bonds, Options, Futures, Real-Estate),
+ asset_cost  random.randint(1000; 10,000,000),
+ asset_market_value (Float), 0% - 200% (Non Cypto, Stoxcks, ETFs, Real-Estate), - 50% to 200%  
+ asset_quantity ,
+ liquidity_rating,
+ asset_owner (customer_uuid) (UUID),
+ portfolio_manager (UUID),
+ value_timestamp)
+
+asset_class = [Crypto, Stocks, ETFs, NFTs, Gold Bonds, Options, Futures, Real-Estate]
+stock_tickers/futures/options = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'FB', 'TSLA', 'NFLX', 'NVDA', 'INTC', 'AMD']
+scenarios = ['inflationary_pressure','recession','bull_market','geopolitical_crisis','technology_disruption','interest_rate_shock_scenario']
+
+Scenario Analysis
+2. 
+SELECT 
+    Scenario,
+    AVG(PortfolioValue) AS AveragePortfolioValue,
+    MAX(PortfolioValue) AS MaxPortfolioValue,
+    MIN(PortfolioValue) AS MinPortfolioValue
+FROM 
+    ScenarioResults
+GROUP BY 
+    Scenario;
+
+3.
+Sector-Wise Performance Analysis
+
+SELECT 
+    Sector,
+    AVG(Return) AS AverageReturn,
+    SUM(InvestmentAmount) AS TotalInvestment
+FROM 
+    PortfolioHoldings
+GROUP BY 
+    Sector
+ORDER BY 
+    AverageReturn DESC;
+
+We can use the portfolio table for this as well
+
+	
+	
+5.
+Top Performing Assets
+
+SELECT 
+    AssetName,
+    SUM(Return) AS TotalReturn
+FROM 
+    AssetPerformance
+GROUP BY 
+    AssetName
+ORDER BY 
+    TotalReturn DESC
+LIMIT 
+    10;
+We can use the portfolio table for this as well
+
+
+WITH RankedAssets AS (
+    SELECT
+        AssetName,
+        Return,
+        ROW_NUMBER() OVER (PARTITION BY AssetClass ORDER BY Return DESC) AS AssetRank
+    FROM
+        AssetPerformance
+    WHERE
+        Year = 2023
+)
+SELECT
+    AssetClass,
+    AssetName,
+    Return
+FROM
+    RankedAssets
+WHERE
+    AssetRank <= 5;
+   
