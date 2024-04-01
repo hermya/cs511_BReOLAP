@@ -1,0 +1,18 @@
+{
+    "name": "clickhouse-connect",
+    "config": {
+      "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
+      "tasks.max": "1",
+      "database": "default",
+      "errors.retry.timeout": "60",
+      "exactlyOnce": "false",
+      "hostname": "clickhouse-01",
+      "port": "8123",
+      "username": "default",
+      "topics": "transactions_topic",
+      "jdbcConnectionProperties":"?socket_timeout=300000",
+      "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+      "value.converter.schemas.enable": "false",
+      "clickhouseSettings": ""
+    }
+  }
