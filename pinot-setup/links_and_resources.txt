@@ -1,0 +1,101 @@
+Creating a Kafka Topic - 
+
+docker exec \
+  -t kafka \
+  /opt/kafka/bin/kafka-topics.sh \
+  --zookeeper manual-zookeeper:2181/kafka \
+  --partitions=1 --replication-factor=1 \
+  --create --topic transcript-topic
+ 
+Table Configuration 
+
+{
+  "tableName": "transcript",
+  "tableType": "REALTIME",
+  "segmentsConfig": {
+    "timeColumnName": "timestampInEpoch",
+    "timeType": "MILLISECONDS",
+    "schemaName": "transcript",
+    "replicasPerPartition": "1"
+  },
+  "tenants": {},
+  "tableIndexConfig": {
+    "loadMode": "MMAP",
+    "streamConfigs": {
+      "streamType": "kafka",
+      "stream.kafka.consumer.type": "lowlevel",
+      "stream.kafka.topic.name": "transcript-topic",
+      "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.stream.kafka.KafkaJSONMessageDecoder",
+      "stream.kafka.consumer.factory.class.name": "org.apache.pinot.plugin.stream.kafka20.KafkaConsumerFactory",
+      "stream.kafka.broker.list": "kafka:9092",
+      "realtime.segment.flush.threshold.rows": "0",
+      "realtime.segment.flush.threshold.time": "24h",
+      "realtime.segment.flush.threshold.segment.size": "50M",
+      "stream.kafka.consumer.prop.auto.offset.reset": "smallest"
+    }
+  },
+  "metadata": {
+    "customConfigs": {}
+  }
+}
+
+Table Schema
+
+{
+  "schemaName": "transcript",
+  "dimensionFieldSpecs": [
+    {
+      "name": "studentID",
+      "dataType": "INT"
+    },
+    {
+      "name": "firstName",
+      "dataType": "STRING"
+    },
+    {
+      "name": "lastName",
+      "dataType": "STRING"
+    },
+    {
+      "name": "gender",
+      "dataType": "STRING"
+    },
+    {
+      "name": "subject",
+      "dataType": "STRING"
+    }
+  ],
+  "metricFieldSpecs": [
+    {
+      "name": "score",
+      "dataType": "FLOAT"
+    }
+  ],
+  "dateTimeFieldSpecs": [{
+    "name": "timestampInEpoch",
+    "dataType": "LONG",
+    "format" : "1:MILLISECONDS:EPOCH",
+    "granularity": "1:MILLISECONDS"
+  }]
+}
+
+
+Uploading Schema and Configuration
+
+docker run \
+    --network=pinot-demo \
+    -v /tmp/pinot-quick-start:/tmp/pinot-quick-start \
+    --name pinot-streaming-table-creation \
+    apachepinot/pinot:latest AddTable \
+    -schemaFile /tmp/pinot-quick-start/transcript-schema.json \
+    -tableConfigFile /tmp/pinot-quick-start/transcript-table-realtime.json \
+    -controllerHost manual-pinot-controller \
+    -controllerPort 9000 \
+    -exec
+	
+Links - 
+
+https://docs.pinot.apache.org/basics/data-import/pinot-stream-ingestion/import-from-apache-kafka
+https://docs.pinot.apache.org/basics/getting-started/pushing-your-streaming-data-to-pinot
+https://docs.pinot.apache.org/basics/data-import/pinot-stream-ingestion#create-schema-configuration
+https://dev.startree.ai/docs/pinot/recipes/kafka-sasl
