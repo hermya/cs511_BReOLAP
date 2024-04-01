@@ -2,12 +2,12 @@ version: '3.8'
 services:
   clickhouse-01:
     image: "clickhouse/clickhouse-server:${CHVER:-latest}"
-    user: "998:997"
+    user: "1001:1001"
     container_name: clickhouse-01
     hostname: clickhouse-01
     volumes:
-      - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-01/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
-      - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-01/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ./fs/volumes/clickhouse-01/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
+      - ./fs/volumes/clickhouse-01/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
     ports:
       - "127.0.0.1:8123:8123"
       - "127.0.0.1:9000:9000"
@@ -17,12 +17,12 @@ services:
       - clickhouse-keeper-03
   clickhouse-02:
     image: "clickhouse/clickhouse-server:${CHVER:-latest}"
-    user: "998:997"
+    user: "1001:1001"
     container_name: clickhouse-02
     hostname: clickhouse-02
     volumes:
-      - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-02/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
-      - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-02/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ./fs/volumes/clickhouse-02/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
+      - ./fs/volumes/clickhouse-02/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
     ports:
       - "127.0.0.1:8124:8123"
       - "127.0.0.1:9001:9000"
@@ -32,12 +32,12 @@ services:
       - clickhouse-keeper-03
   clickhouse-03:
     image: "clickhouse/clickhouse-server:${CHVER:-latest}"
-    user: "998:997"
+    user: "1001:1001"
     container_name: clickhouse-03
     hostname: clickhouse-03
     volumes:
-      - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-03/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
-      - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-03/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ./fs/volumes/clickhouse-03/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
+      - ./fs/volumes/clickhouse-03/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
     ports:
       - "127.0.0.1:8125:8123"
       - "127.0.0.1:9002:9000"
@@ -47,12 +47,12 @@ services:
       - clickhouse-keeper-03
   clickhouse-04:
     image: "clickhouse/clickhouse-server:${CHVER:-latest}"
-    user: "998:997"
+    user: "1001:1001"
     container_name: clickhouse-04
     hostname: clickhouse-04
     volumes:
-      - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-04/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
-      - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-04/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ./fs/volumes/clickhouse-04/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
+      - ./fs/volumes/clickhouse-04/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
     ports:
         - "127.0.0.1:8126:8123"
         - "127.0.0.1:9003:9000"
@@ -62,37 +62,37 @@ services:
       - clickhouse-keeper-03
   clickhouse-keeper-01:
     image: "clickhouse/clickhouse-keeper:${CHKVER:-latest-alpine}"
-    user: "998:997"
+    user: "1001:1001"
     container_name: clickhouse-keeper-01
     hostname: clickhouse-keeper-01
     tty: true
     volumes:
-     - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-keeper-01/etc/clickhouse-keeper/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
-     - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-keeper-01/log:/var/log
-     - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-keeper-01/lib:/var/lib/clickhouse-keeper
+     - ./fs/volumes/clickhouse-keeper-01/etc/clickhouse-keeper/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
+     - ./fs/volumes/clickhouse-keeper-01/log:/var/log
+     - ./fs/volumes/clickhouse-keeper-01/lib:/var/lib/clickhouse-keeper
     ports:
         - "127.0.0.1:9181:9181"
   clickhouse-keeper-02:
     image: "clickhouse/clickhouse-keeper:${CHKVER:-latest-alpine}"
-    user: "998:997"
+    user: "1001:1001"
     container_name: clickhouse-keeper-02
     hostname: clickhouse-keeper-02
     tty: true
     volumes:
-     - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-keeper-02/etc/clickhouse-keeper/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
-     - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-keeper-02/log:/var/log
-     - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-keeper-02/lib:/var/lib/clickhouse-keeper    
+     - ./fs/volumes/clickhouse-keeper-02/etc/clickhouse-keeper/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
+     - ./fs/volumes/clickhouse-keeper-02/log:/var/log
+     - ./fs/volumes/clickhouse-keeper-02/lib:/var/lib/clickhouse-keeper    
     ports:
         - "127.0.0.1:9182:9181"
   clickhouse-keeper-03:
     image: "clickhouse/clickhouse-keeper:${CHKVER:-latest-alpine}"
-    user: "998:997"
+    user: "1001:1001"
     container_name: clickhouse-keeper-03
     hostname: clickhouse-keeper-03
     tty: true
     volumes:
-     - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-keeper-03/etc/clickhouse-keeper/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
-     - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-keeper-03/log:/var/log
-     - /home/herambjoshi/clickhouse-mutlinode/examples/docker-compose-recipes/recipes/cluster_2S_2R/fs/volumes/clickhouse-keeper-03/lib:/var/lib/clickhouse-keeper    
+     - ./fs/volumes/clickhouse-keeper-03/etc/clickhouse-keeper/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
+     - ./fs/volumes/clickhouse-keeper-03/log:/var/log
+     - ./fs/volumes/clickhouse-keeper-03/lib:/var/lib/clickhouse-keeper    
     ports:
         - "127.0.0.1:9183:9181"
