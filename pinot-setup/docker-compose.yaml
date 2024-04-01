@@ -50,8 +50,8 @@ services:
     expose:
       - "9093"
     depends_on:
-      - zookeeper
+      - pinot-zookeeper
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: pinot-zookeepr:2181/kafka
+      KAFKA_ZOOKEEPER_CONNECT: pinot-zookeeper:2181/kafka
       KAFKA_BROKER_ID: 0
       KAFKA_ADVERTISED_HOST_NAME: kafka
