@@ -1,5 +1,5 @@
-#from confluent_kafka import Producer
-#from urllib.parse import urlencode
+from confluent_kafka import Producer
+from urllib.parse import urlencode
 import json
 import requests
 import random
@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 import numpy as np
 
 # Kafka configuration
-bootstrap_servers = "localhost:9092"
+bootstrap_servers = ""
 
 # Druid ingestion configuration
 druid_host = "localhost"
@@ -29,13 +29,13 @@ def split_into_batches(array, batch_size):
 
 
 def push_to_kafka(data, topic_name):
-    '''
-    print("Publishing the following data");
-    print(data);
-    time.sleep(10);
+    
+    # print("Publishing the following data");
+    # print(data);
+    # time.sleep(10);
     
     
-    Pushes data to the specified Kafka topic.
+    # Pushes data to the specified Kafka topic.
     #print("Publising message " + str(data) + " onto topic " + topic_name);
     
     producer = Producer({"bootstrap.servers": bootstrap_servers})
@@ -44,7 +44,7 @@ def push_to_kafka(data, topic_name):
         producer.produce(topic_name, json.dumps(message).encode("utf-8"))
         producer.poll(0)
     producer.flush()
-    '''
+    
 
 
 def random_date(start_date, end_date):
