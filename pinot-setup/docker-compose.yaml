@@ -16,7 +16,7 @@ services:
     ports:
       - "9000:9000"
     environment:
-      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx2G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log"
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log"
     depends_on:
       - pinot-zookeeper
   pinot-broker:
@@ -27,7 +27,7 @@ services:
     ports:
       - "8099:8099"
     environment:
-      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx2G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log"
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log"
     depends_on:
       - pinot-controller
   pinot-server:
