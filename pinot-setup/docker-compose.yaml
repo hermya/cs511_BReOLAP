@@ -16,7 +16,7 @@ services:
     ports:
       - "9000:9000"
     environment:
-      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log"
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent-0.12.0.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/pinot.yml"
     depends_on:
       - pinot-zookeeper
   pinot-broker:
@@ -55,3 +55,15 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: pinot-zookeeper:2181/kafka
       KAFKA_BROKER_ID: 0
       KAFKA_ADVERTISED_HOST_NAME: kafka
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom_data:/prometheus
+volumes:
+  prom_data:

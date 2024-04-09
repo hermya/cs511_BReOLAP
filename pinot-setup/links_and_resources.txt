@@ -1,6 +1,6 @@
 Creating a Kafka Topic - 
 
-docker exec -t kafka /opt/bitnami/kafka/bin/kafka-topics.sh --zookeeper pinot-zookeeper:2181/kafka --partitions=1 --replication-factor=1 --create --topic transcript-topic
+docker exec -t kafka /opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --partitions=1 --replication-factor=1 --create --topic transcript-topic
 
 Uploading Schema and Configuration
 	- Fetch the files /transcript-table-realtime and /transcript-schema from /tmp/pinot-quick-start and put them onto the pinot-controller node
