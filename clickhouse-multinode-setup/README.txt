@@ -1,6 +1,6 @@
 # Copy the clickhouse jar file to debezium_connect
 sudo docker cp clickhouse-jdbc-0.5.0.jar  generic-kafka-setup_debezium_1:/kafka/libs/
-# restart generic-kafka-setup_debezium_1 and run this script to create sink connector
+# restart debezium and run this script to create sink connector
 curl -X POST --location 'http://localhost:8087/connectors' --header 'Content-Type: application/json' --header 'Accept: application/json' --data @sink-connector.json
 # In order to delete this sink connetor later, use this command
 # curl -X DELETE http://localhost:8087/connectors/clickhouse-connect
@@ -18,4 +18,3 @@ To create a Prometheus data source in Grafana:
     To begin with, use this metrics: 
     ClickHouseProfileEvents_InsertQueryTimeMicroseconds
     ClickHouseProfileEvents_SelectQueryTimeMicroseconds
-    
