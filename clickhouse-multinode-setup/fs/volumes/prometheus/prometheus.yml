@@ -1,0 +1,9 @@
+scrape_configs:
+- job_name: prometheus
+  static_configs:
+  - targets: [localhost:9090]
+
+- job_name: 'clickhouse'
+  static_configs:
+    - targets:
+      - 'clickhouse-01:9363'
