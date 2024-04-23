@@ -1,11 +1,16 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-conn_str = 'clickhouse://default:@localhost/default'
-engine = create_engine(conn_str)
-session = sessionmaker(bind=engine)()
+import clickhouse_connect
 
-from sqlalchemy import DDL, DML
-database = 'test'
-with engine.connect() as connection:
-    result = connection.execute(text("SELECT * FROM table"))
+client = clickhouse_connect.get_client(host='192.168.0.111',
+                                       user='default',
+                                       connect_timeout=15,
+                                       database='default',
+                                       settings={'distributed_ddl_task_timeout':300})
 
+
+# client.command('CREATE TABLE test_command (col_1 String, col_2 DateTime) Engine MergeTree ORDER BY tuple()')
+for i in range(1000):
+    client.command('INSERT INTO test_command (col_1, col_2) VALUES (%s, %s)', 
+              ('value_for_col_1', '2024-04-23 13:10:00'))
+
+result = client.command('SELECT count() FROM test_command')
+print(result) 
