@@ -6,8 +6,8 @@ CREATE TABLE Assets (
     asset_cost DECIMAL(15, 2) NOT NULL,
     asset_market_value DECIMAL(15, 2),
     asset_quantity DECIMAL(15, 2),
-    liquidity_rating VARCHAR(50),
+    liquidity_rating float,
     asset_owner UUID,
     portfolio_manager UUID,
-    value_timestamp BIGINT
+    value_timestamp long
 );
