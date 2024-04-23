@@ -1,1 +1,3 @@
 starrocks/starrocks
+clickhouse-multinode-setup/fs/volumes/clickhouse-keeper-0*/lib
+clickhouse-multinode-setup/fs/volumes/clickhouse-keeper-0*/log
