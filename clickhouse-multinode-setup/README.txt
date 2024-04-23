@@ -5,7 +5,7 @@ curl -X POST --location 'http://localhost:8087/connectors' --header 'Content-Typ
 # In order to delete this sink connetor later, use this command
 # curl -X DELETE http://localhost:8087/connectors/clickhouse-connect
 
-To create a Prometheus data source in Grafana:
+To create a Prometheus data source in Grafana: https://prometheus.io/docs/visualization/grafana/
 
     Click on the "cogwheel" in the sidebar to open the Configuration menu.
     Click on "Data Sources".
