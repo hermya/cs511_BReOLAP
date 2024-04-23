@@ -5,7 +5,6 @@ CREATE TABLE Transactions (
     amount DECIMAL(15, 2) NOT NULL,
     transaction_type ENUM('Payment', 'Withdrawal', 'InterestPayment', 'LoanRepayment', 'Other') NOT NULL,
     due_date DATE NOT NULL,
-    description VARCHAR(255),
     category ENUM('Operational', 'Financial', 'ClientWithdrawal', 'Contingent', 'Regulatory') NOT NULL,
     confirmed BOOLEAN DEFAULT FALSE,
     asset_linked UUID,
