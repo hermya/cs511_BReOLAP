@@ -202,7 +202,7 @@ services:
       - 'grafana_storage:/var/lib/grafana'
 
 
-  zookeeper:
+  kafka-zookeeper:
     image: confluentinc/cp-zookeeper:5.5.3
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
