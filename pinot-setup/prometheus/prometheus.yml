@@ -6,9 +6,9 @@ scrape_configs:
 - job_name: pinot-controller
   static_configs:
   - targets: [pinot-controller:8888]
-#- job_name: pinot-broker
-#  static_configs:
-#  - targets: [pinot-broker:8888]
-#- job_name: pinot-server
-#  static_configs:
-#  - targets: [pinot-server:8888]
+- job_name: pinot-broker
+  static_configs:
+  - targets: [pinot-broker:8888]
+- job_name: pinot-server
+  static_configs:
+  - targets: [pinot-server:8888]
