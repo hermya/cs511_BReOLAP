@@ -1,4 +1,4 @@
-starrocks/starrocks
+starrocks/starrocks-vol
 clickhouse-multinode-setup/fs/volumes/clickhouse-keeper-0*/lib
 clickhouse-multinode-setup/fs/volumes/clickhouse-keeper-0*/log
 temp-doris-setup-2/trial-all-in-one/resource/apache-doris-*
