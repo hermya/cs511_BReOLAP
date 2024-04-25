@@ -1,5 +1,6 @@
 version: '3.7'
 services:
+
   pinot-zookeeper:
     image: zookeeper:3.9.0
     container_name: pinot-zookeeper
@@ -8,6 +9,7 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+
   pinot-controller:
     image: apachepinot/pinot:1.1.0
     command: "StartController -zkAddress pinot-zookeeper:2181"
@@ -15,10 +17,13 @@ services:
     restart: unless-stopped
     ports:
       - "9000:9000"
+      - "8888"
     environment:
-      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent-0.12.0.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/pinot.yml"
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/controller.yml"
     depends_on:
       - pinot-zookeeper
+    
+
   pinot-broker:
     image: apachepinot/pinot:1.1.0
     command: "StartBroker -zkAddress pinot-zookeeper:2181"
@@ -26,10 +31,12 @@ services:
     container_name: "pinot-broker"
     ports:
       - "8099:8099"
+      - "8888"
     environment:
-      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log"
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/broker.yml"
     depends_on:
       - pinot-controller
+
   pinot-server:
     image: apachepinot/pinot:1.1.0
     command: "StartServer -zkAddress pinot-zookeeper:2181"
@@ -37,24 +44,12 @@ services:
     container_name: "pinot-server"
     ports:
       - "8098:8098"
+      - "8888"
     environment:
-      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-server.log"
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-server.log -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/server.yml"
     depends_on:
       - pinot-broker
-  kafka:
-    image: bitnami/kafka:latest
-    restart: unless-stopped
-    container_name: "kafka"
-    ports:
-      - "9092:9092"
-    expose:
-      - "9093"
-    depends_on:
-      - pinot-zookeeper
-    environment:
-      KAFKA_ZOOKEEPER_CONNECT: pinot-zookeeper:2181/kafka
-      KAFKA_BROKER_ID: 0
-      KAFKA_ADVERTISED_HOST_NAME: kafka
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -65,5 +60,52 @@ services:
     volumes:
       - ./prometheus:/etc/prometheus
       - prom_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      - TERM=linux
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel
+    ports:
+      - '3000:3000'
+    volumes:
+      - 'grafana_storage:/var/lib/grafana'
+
+
+  kaf-zookeeper:
+    image: confluentinc/cp-zookeeper:5.5.3
+    container_name: "kaf-zookeeper"
+    ports:
+      - "2182:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-enterprise-kafka:5.5.3
+    container_name: "kafka"
+    depends_on:
+      - kaf-zookeeper
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ZOOKEEPER_CONNECT: kaf-zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    restart: "no"
+    ports:
+      - "9500:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:9092"
+    depends_on:
+      - "kafka"
+      
 volumes:
   prom_data:
+  grafana_storage: {}

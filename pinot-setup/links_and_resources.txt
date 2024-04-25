@@ -11,3 +11,13 @@ Pushing Data Onto Topic
 python data_generator_transcript.py | docker exec -i kafka /opt/bitnami/kafka/bin/kafka-console-producer.sh \ --bootstrap-server localhost:9092 \ --topic transcript-topic
 
 Data can be viewed at localhost:9000
+
+IMPORTANT UPDATE
+1) Prometheus integrated with pinot doesn't emit queryTime execution metrics graph until data in pinot actually generated or queried.
+2) Because of this, one has to add table to view it which is logical, but here's the catch:
+3) With latest version of pinot (1.1.0), if we use the following argument -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/controller.yml, we will face the same issue as metioned in https://github.com/apache/pinot/issues/11891 , which bars us from any further data creation/querying.
+4) To solve this, it is essential that, once pinot-<X> node is up and running, you should execute the following code inside the docker environment
+$> export JAVA_OPTS_TEMP=${JAVA_OPTS}
+$> export JAVA_OPTS=
+This will essentially help us avoid the stated issue.
+5) Similar to the other setups, we can use grafana to view the metrics, using following graph confs like "pinot_broker_realtimeTotalCPUTimeNS*"
