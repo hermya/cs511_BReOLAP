@@ -8,20 +8,38 @@ from datetime import datetime, timedelta
 import threading
 import sys
 
-bootstrap_servers = "localhost:29092"
+bootstrap_servers = "192.168.0.111:29092"
 publish_batch = int(sys.argv[1])
+generation_batch = int(sys.argv[2])
 
-producer = Producer({"bootstrap.servers": bootstrap_servers})
+#Credits to Alexandra Zaharia dev blog - https://alexandra-zaharia.github.io/
+#Extending python thread class to allow the python thread to return a value
+class ReturnValueThread(threading.Thread):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.result = None
+
+    def run(self):
+        if self._target is None:
+            return  # could alternatively raise an exception, depends on the use case
+        try:
+            self.result = self._target(*self._args, **self._kwargs)
+        except Exception as exc:
+            print(f'{type(exc).__name__}: {exc}', file=sys.stderr)  # properly handle the exception
+
+    def join(self, *args, **kwargs):
+        super().join(*args, **kwargs)
+        return self.result
+
 
 def split_into_batches(array, batch_size):
     return [array[i:i+batch_size] for i in range(0, len(array), batch_size)]
+
 
 def calculate_time_interval(rows_per_minute):
     batches_per_minute = rows_per_minute/publish_batch
     time_interval = 60/batches_per_minute
     return time_interval
-
-
 
 def publish_data(data, topic_name, time_interval):
     data_batches = split_into_batches(data, publish_batch)
@@ -31,10 +49,14 @@ def publish_data(data, topic_name, time_interval):
         time.sleep(time_interval)
 
 def push_to_kafka(data, topic_name):
-    for message in data:
-        producer.produce(topic_name, json.dumps(message).encode("utf-8"))
-        producer.poll(0)
-    producer.flush()
+    producer = Producer({"bootstrap.servers": bootstrap_servers})
+    try:
+        for message in data:
+            producer.produce(topic_name, json.dumps(message).encode("utf-8"))
+            producer.poll(0)
+        producer.flush()
+    except Exception as exc:
+        print("Exception caught " + str(exc))
     print("Completed publishing " + str(len(data)) + " records onto topic: " + topic_name)
     
 def random_date(start_date, end_date):
@@ -49,7 +71,40 @@ liquidity_ratings = ["High", "Medium", "Low"]
 transaction_types = ["Inflow","Outflow"]
 
 #This will generate asset and asset risk data
-def generate_asset_data(asset_index, num_rows, rows_per_minute):
+def generate_and_publish_asset_data(asset_index, num_rows, rows_per_minute):
+    asset_array, risk_array = generate_asset_data(asset_index, generation_batch)
+
+    rows_generated = generation_batch
+    time_interval = calculate_time_interval(rows_per_minute)
+    while rows_generated < num_rows:
+        #Creating thread to publish asset data
+        asset_publish_thread = threading.Thread(target = publish_data, args = (asset_array, "asset-topic", time_interval))
+        #Creating thread to publish risk data
+        risk_publish_thread = threading.Thread(target = publish_data, args = (risk_array, "risk-topic", time_interval))
+        #Creating a new ReturnableThread to generate asset and risk data
+        data_generation_thread = ReturnValueThread(target = generate_asset_data, args = (rows_generated, generation_batch))
+
+        asset_publish_thread.start()
+        risk_publish_thread.start()
+        data_generation_thread.start()
+
+        asset_publish_thread.join()
+        risk_publish_thread.join()    
+        asset_array, risk_array = data_generation_thread.join()
+        
+        rows_generated += generation_batch
+
+    #Publishing last data
+    asset_publish_thread = threading.Thread(target = publish_data, args = (asset_array, "asset-topic", time_interval))
+    risk_publish_thread = threading.Thread(target = publish_data, args = (risk_array, "risk-topic", time_interval))
+    asset_publish_thread.start()
+    risk_publish_thread.start()
+    asset_publish_thread.join()
+    risk_publish_thread.join()
+
+    time_interval = calculate_time_interval(rows_per_minute)
+
+def generate_asset_data(asset_index, num_rows):
     asset_array = []
     risk_array = []
     for i in range(num_rows):
@@ -88,22 +143,36 @@ def generate_asset_data(asset_index, num_rows, rows_per_minute):
         }
 
         risk_array.append(json_object_risk)
+    print("Generated " + str(num_rows) + " asset and risk records")
+    return asset_array, risk_array
 
-    time_interval = calculate_time_interval(rows_per_minute)    
-    #Creating two different threads to push asset and risk data onto kafka simultaneously
-    t4 = threading.Thread(target = publish_data, args = (asset_array, "asset-topic", time_interval))
-    t5 = threading.Thread(target = publish_data, args = (risk_array, "risk-topic", time_interval))
-    t4.start()
-    t5.start()
-
-    t4.join()
-    t5.join()
-    return asset_array, risk_array, (num_rows + asset_index)
 
 transaction_types = ["Deposit", "Payment", "Withdrawal", "InterestPayment", "LoanRepayment", "Other"]
 transaction_categories = ["Operational", "Financial", "ClientWithdrawal", "Contingent", "Regulatory"]
 
-def generate_transactions_data(transaction_index, num_rows, rows_per_minute):
+def generate_and_publish_transactions_data(transactions_index, num_rows, rows_per_minute):
+    transactions_array = generate_transactions_data(transactions_index, generation_batch)
+
+    rows_generated = generation_batch
+    time_interval = calculate_time_interval(rows_per_minute)
+    while rows_generated < num_rows:
+        #Creating thread to publish asset data
+        transctions_publish_thread = threading.Thread(target = publish_data, args = (transactions_array, "transactions-topic", time_interval))
+        #Creating thread to generate data
+        data_generation_thread = ReturnValueThread(target = generate_transactions_data, args = (rows_generated, generation_batch))
+
+        transctions_publish_thread.start()
+        data_generation_thread.start()
+
+        transctions_publish_thread.join()    
+        transactions_array = data_generation_thread.join()
+        
+        rows_generated += generation_batch
+
+    #Publishing last data
+    publish_data(transactions_array, "transactions-topic", time_interval)
+
+def generate_transactions_data(transaction_index, num_rows):
     transaction_array = []
     for i in range(num_rows):
         transaction_id = i+1 + transaction_index
@@ -129,15 +198,36 @@ def generate_transactions_data(transaction_index, num_rows, rows_per_minute):
             "created_at": str(created_at)   
         }
         transaction_array.append(json_object)
-    time_interval = calculate_time_interval(rows_per_minute)
-    publish_data(transaction_array, "transactions-topic", time_interval)
-    return transaction_array, (transaction_index + num_rows)
+    print("Generated " + str(len(transaction_array)) + " elements for the transactions table")
+    return transaction_array
 
 statuses = ["Active","Paid Off", "Defaulted"]
 
-def generate_liabilities_data(liabilities_index, num_rows, rows_per_minute):
+def generate_and_publish_liabilities_data(liabilites_index, num_rows, rows_per_minute):
+    liabilties_array = generate_liabilities_data(liabilites_index, generation_batch)
 
-    liabilities_array = []
+    rows_generated = generation_batch
+    time_interval = calculate_time_interval(rows_per_minute)
+    while rows_generated < num_rows:
+        #Creating thread to publish asset data
+        liabilities_publish_thread = threading.Thread(target = publish_data, args = (liabilties_array, "liabilities-topic", time_interval))
+        #Creating thread to generate data
+        data_generation_thread = ReturnValueThread(target = generate_liabilities_data, args = (rows_generated, generation_batch))
+
+        liabilities_publish_thread.start()
+        data_generation_thread.start()
+
+        liabilities_publish_thread.join()    
+        liabilties_array = data_generation_thread.join()
+        
+        rows_generated += generation_batch
+
+    #Publishing last data
+    publish_data(liabilties_array, "liabilities-topic", time_interval)
+
+def generate_liabilities_data(liabilities_index, num_rows):
+
+    liabilties_array = []
     for i in range(num_rows):
         liability_id = i+1 + liabilities_index
         bank_id = str(uuid.uuid4())
@@ -161,10 +251,10 @@ def generate_liabilities_data(liabilities_index, num_rows, rows_per_minute):
             "created_at": created_at,
             "created_by": created_by
         }
-        liabilities_array.append(json_object)
-    time_interval = calculate_time_interval(rows_per_minute)
-    publish_data(liabilities_array, "liabilities-topic", time_interval)
-    return liabilities_array, (liabilities_index + num_rows)
+        liabilties_array.append(json_object)
+    print("Generated " + str(len(liabilties_array)) + " elements for the liabilties table")
+    return liabilties_array
+
 '''
 CLI Arguments - 
 1 -> Publish batch
@@ -177,11 +267,10 @@ CLI Arguments -
 '''
 print("Printing arguments")
 print(sys.argv)
-#print("Printing arguments " + str(sys.argv[0]) + " " + str(sys.argv[1]) + " " + str(sys.argv[2]) + " " + str(sys.argv[3]) + " " + str(sys.argv[4]) + " " + str(sys.argv[5]))
 
-t1 = threading.Thread(target = generate_asset_data, args = (0, int(sys.argv[2]), int(sys.argv[3])))
-t2 = threading.Thread(target = generate_transactions_data, args = (0, int(sys.argv[4]), int(sys.argv[5])))
-t3 = threading.Thread(target = generate_liabilities_data, args = (0, int(sys.argv[6]), int(sys.argv[7])))
+t1 = threading.Thread(target = generate_and_publish_asset_data, args = (0, int(sys.argv[3]), int(sys.argv[4])))
+t2 = threading.Thread(target = generate_and_publish_liabilities_data, args = (0, int(sys.argv[5]), int(sys.argv[6])))
+t3 = threading.Thread(target = generate_and_publish_transactions_data, args = (0, int(sys.argv[7]), int(sys.argv[8])))
 
 t1.start()
 t2.start()
