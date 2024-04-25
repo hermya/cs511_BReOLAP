@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s # Set the global scrape interval to 15s. The default is 1 min.
+  evaluation_interval: 15s # Set the global rule evaluation interval to 15s. The default is 1 min.
+scrape_configs:
+  - job_name: 'StarRocks_Cluster01' # A cluster being monitored corresponds to a job. You can customize the StarRocks cluster name here.
+    metrics_path: '/metrics'    # Specify the Restful API for retrieving monitoring metrics.
+    static_configs:
+    # The following configuration specifies an FE group, which includes 3 FE nodes.
+    # Here, you need to fill in the IP and HTTP ports corresponding to each FE.
+    # If you modified the HTTP ports during cluster deployment, make sure to adjust them accordingly.
+      - targets: ['starrocks-fe:8030']
+        labels:
+          group: fe
+    # The following configuration specifies a BE group, which includes 3 BE nodes.
+    # Here, you need to fill in the IP and HTTP ports corresponding to each BE.
+    # If you modified the HTTP ports during cluster deployment, make sure to adjust them accordingly.
+      - targets: ['starrocks-be:8040']
+        labels:
+          group: be
