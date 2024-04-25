@@ -1,4 +1,4 @@
-CREATE TABLE AssetRisks (
+CREATE TABLE AssetRisk (
     asset_uuid UUID NOT NULL,
     risk_uuid UUID NOT NULL,
     risk_factor FLOAT NOT NULL,
