@@ -4,3 +4,5 @@ wget https://github.com/StarRocks/starrocks-connector-for-kafka/releases/downloa
 # setup guide
 https://docs.starrocks.io/docs/loading/Kafka-connector-starrocks/
 
+# 3fe 3be setup link [not verified for our purpose by 04/25/2024]
+https://github.com/StarRocks/demo/blob/master/deploy/docker-compose/docker-compose-3BE.yml
