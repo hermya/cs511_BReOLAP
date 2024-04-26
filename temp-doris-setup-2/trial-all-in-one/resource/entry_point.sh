@@ -20,6 +20,9 @@ set -eo pipefail
 shopt -s nullglob
 
 DORIS_HOME="/opt/apache-doris"
+echo "port  = 9030" >> /etc/mysql/mysql.conf.d/mysqld.cnf
+cat /etc/mysql/mysql.conf.d/mysqld.cnf | grep 9030
+service mysql restart
 
 # Obtain necessary and basic information to complete initialization
 
@@ -73,7 +76,7 @@ docker_setup_env() {
 # Execute sql script, passed via stdin
 docker_process_sql() {
     set +e
-    mysql -uroot -P9030 -h127.0.0.1 --comments "$@" 2>&1
+    mysql -P9030 -h127.0.0.1 --comments "$@" 2>&1
 }
 
 check_be_status() {

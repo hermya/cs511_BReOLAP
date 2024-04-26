@@ -32,7 +32,7 @@ FROM ubuntu:22.04
 ARG TARGETARCH
 
 RUN apt-get update -y &&  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    patchelf gdb binutils binutils-common mysql-client sudo \
+    patchelf gdb binutils binutils-common mysql-client mysql-server sudo \
     curl wget less vim htop iproute2 numactl jq iotop sysstat \
     tcpdump iputils-ping dnsutils strace lsof blktrace tzdata \
     bpfcc-tools linux-headers-realtime linux-tools-realtime silversearcher-ag \
