@@ -1,0 +1,55 @@
+{
+    "schemaName": "liabilities",
+    "dimensionFieldSpecs": [
+      {
+        "name": "liability_id",
+        "dataType": "INT"
+      },
+      {
+        "name": "bank_id",
+        "dataType": "STRING"
+      },
+      {
+        "name": "counterparty_uuid",
+        "dataType": "STRING"
+      },
+      {
+        "name": "status",
+        "dataType": "STRING"
+      },
+      {
+        "name": "created_by",
+        "dataType": "STRING"
+      }
+    ],
+    "metricFieldSpecs": [
+      {
+        "name": "liability_amount",
+        "dataType": "FLOAT"
+      },
+      {
+        "name": "interest_rate",
+        "dataType": "FLOAT"
+      },
+      {
+        "name": "start_date",
+        "dataType": "FLOAT"
+      },
+      {
+        "name": "maturity_date",
+        "dataType": "FLOAT"
+      },
+      {
+        "name": "created_at",
+        "dataType": "FLOAT"
+      }
+    ],
+    "dateTimeFieldSpecs": [
+        {
+            "name": "ts",
+            "dataType": "TIMESTAMP",
+            "format" : "1:MILLISECONDS:EPOCH",
+            "granularity": "1:MILLISECONDS"
+        }
+    ]
+}

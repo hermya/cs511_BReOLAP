@@ -1,0 +1,55 @@
+{
+    "schemaName":"asset",
+    "dimensionFieldSpecs":[
+       {
+          "name":"asset_id",
+          "dataType":"INT"
+       },
+       {
+          "name":"asset_uuid",
+          "dataType":"STRING"
+       },
+       {
+          "name":"asset_class",
+          "dataType":"STRING"
+       },
+       {
+          "name":"asset_owner",
+          "dataType":"STRING"
+       },
+       {
+          "name":"portfolio_manager",
+          "dataType":"STRING"
+       },
+	   {
+          "name":"liquidity_rating",
+          "dataType":"STRING"
+       }
+    ],
+    "metricFieldSpecs":[
+       {
+          "name":"asset_cost",
+          "dataType":"FLOAT"
+       },
+       {
+          "name":"asset_market_value",
+          "dataType":"FLOAT"
+       },
+       {
+          "name":"asset_quantity",
+          "dataType":"FLOAT"
+       },
+       {
+         "name":"value_timestamp",
+         "dataType":"FLOAT"
+      }
+    ],
+    "dateTimeFieldSpecs":[
+       {
+        "name": "ts",
+        "dataType": "TIMESTAMP",
+        "format" : "1:MILLISECONDS:EPOCH",
+        "granularity": "1:MILLISECONDS"
+      }
+    ]
+}
