@@ -1,0 +1,55 @@
+{
+    "schemaName": "transactions",
+    "dimensionFieldSpecs": [
+      {
+        "name": "transaction_id",
+        "dataType": "INT"
+      },
+      {
+        "name": "transaction_uuid",
+        "dataType": "STRING"
+      },
+      {
+        "name": "asset_linked",
+        "dataType": "STRING"
+      },
+      {
+        "name": "transaction_type",
+        "dataType": "STRING"
+      },
+      {
+        "name": "transaction_category",
+        "dataType": "STRING"
+      },
+      {
+        "name": "transaction_date",
+        "dataType": "FLOAT"
+      },
+      {
+        "name": "transaction_due_date",
+        "dataType": "FLOAT"
+      },
+      {
+        "name": "created_at",
+        "dataType": "FLOAT"
+      },
+      {
+        "name": "transaction_confirmed",
+        "dataType": "INT"
+      }
+    ],
+    "metricFieldSpecs": [
+      {
+        "name": "transaction_amount",
+        "dataType": "FLOAT"
+      }
+    ],
+    "dateTimeFieldSpecs": [
+        {
+            "name": "ts",
+            "dataType": "TIMESTAMP",
+            "format" : "1:MILLISECONDS:EPOCH",
+            "granularity": "1:MILLISECONDS"
+        }
+    ]
+}
