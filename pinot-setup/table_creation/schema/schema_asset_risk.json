@@ -1,0 +1,25 @@
+{
+    "schemaName": "asset_risk",
+    "dimensionFieldSpecs": [
+      {
+        "name": "asset_uuid",
+        "dataType": "STRING"
+      },
+      {
+        "name": "risk_uuid",
+        "dataType": "STRING"
+      }
+    ],
+    "metricFieldSpecs": [
+      {
+        "name": "risk_rating",
+        "dataType": "FLOAT"
+      }
+    ],
+    "dateTimeFieldSpecs": [{
+    "name": "ts",
+    "dataType": "TIMESTAMP",
+    "format" : "1:MILLISECONDS:EPOCH",
+    "granularity": "1:MILLISECONDS"
+  }]
+}
