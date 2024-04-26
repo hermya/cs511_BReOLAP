@@ -107,3 +107,6 @@ curs.execute("""
     GROUP BY category
     ORDER BY confirmation_rate DESC;
 """)
+
+# Close the connection
+conn.close()
