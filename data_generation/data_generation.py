@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 import threading
 import sys
 
-bootstrap_servers = "192.168.0.111:29092"
+#bootstrap_servers = "192.168.0.111:29092"
+bootstrap_servers = "localhost:29092"
 publish_batch = int(sys.argv[1])
 generation_batch = int(sys.argv[2])
 
@@ -111,7 +112,7 @@ def generate_asset_data(asset_index, num_rows):
         asset_id = (i+1) + asset_index
         asset_uuid = str(uuid.uuid4())
         asset_class = random.choice(asset_classes)
-        asset_cost = random.randint(100, 10000000000)
+        asset_cost = random.uniform(100, 10000000000)
         liquidity_rating = random.choice(liquidity_ratings)
         if asset_class in ["Crypto", "Stocks","ETFs","Options","Futures"]:
             asset_market_value = asset_cost + asset_cost * (random.randint(-150,200)/100)
@@ -131,6 +132,7 @@ def generate_asset_data(asset_index, num_rows):
             "value_timestamp": str(time.time())
         }
         asset_array.append(json_object)
+        #print(json_object)
         # push_to_kafka(json_object)
 
         risk_uuid = str(uuid.uuid4())
@@ -141,7 +143,8 @@ def generate_asset_data(asset_index, num_rows):
             "risk_uuid": risk_uuid,
             "risk_rating": risk_factor
         }
-
+        #print("Printing risk array")
+        #print(json_object_risk)
         risk_array.append(json_object_risk)
     print("Generated " + str(num_rows) + " asset and risk records")
     return asset_array, risk_array
