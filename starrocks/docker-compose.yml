@@ -30,7 +30,7 @@ services:
       - /bin/bash
       - -c
       - |
-        sleep 15s; mysql --connect-timeout 2 -h starrocks-fe -P9030 -uroot -e "alter system add backend \"starrocks-be:9050\";"
+        sleep 15s; mysql --connect-timeout 2 -h starrocks-fe -P 9030 -uroot -e "alter system add backend \"starrocks-be:9050\";"
         /opt/starrocks/be/bin/start_be.sh
     ports:
       - 8040:8040
