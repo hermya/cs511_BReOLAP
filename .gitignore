@@ -3,3 +3,5 @@ clickhouse-multinode-setup/fs/volumes/clickhouse-keeper-0*/lib
 clickhouse-multinode-setup/fs/volumes/clickhouse-keeper-0*/log
 temp-doris-setup-2/trial-all-in-one/resource/apache-doris-*
 temp
+temp-doris-setup-2/trial-all-in-one/be/resource/apache-doris-*
+temp-doris-setup-2/trial-all-in-one/fe/resource/apache-doris-*
