@@ -14,6 +14,10 @@
           "dataType":"STRING"
        },
        {
+         "name":"asset_name",
+         "dataType":"STRING"
+      },
+       {
           "name":"asset_owner",
           "dataType":"STRING"
        },

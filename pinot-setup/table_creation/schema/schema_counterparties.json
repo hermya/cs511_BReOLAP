@@ -1,0 +1,35 @@
+{
+    "schemaName": "counterparties",
+    "dimensionFieldSpecs": [
+        {
+            "name": "counterparty_id",
+            "dataType": "INT"
+        },
+        {
+            "name": "counterparty_uuid",
+            "dataType": "STRING"
+        },
+        {
+            "name": "counterparty_name",
+            "dataType": "STRING"
+        },
+        {
+            "name": "counterparty_type",
+            "dataType": "STRING"
+        }
+    ],
+    "metricFieldSpecs": [
+        {
+            "name": "created_at",
+            "dataType": "FLOAT"
+        }
+    ],
+    "dateTimeFieldSpecs": [
+        {
+            "name": "ts",
+            "dataType": "TIMESTAMP",
+            "format" : "1:MILLISECONDS:EPOCH",
+            "granularity": "1:MILLISECONDS"
+        }
+    ]
+}

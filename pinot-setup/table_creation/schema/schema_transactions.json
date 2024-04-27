@@ -14,6 +14,10 @@
         "dataType": "STRING"
       },
       {
+        "name": "counterparty_uuid",
+        "dataType": "STRING"
+      },
+      {
         "name": "transaction_type",
         "dataType": "STRING"
       },
@@ -21,6 +25,12 @@
         "name": "transaction_category",
         "dataType": "STRING"
       },
+      {
+        "name": "transaction_confirmed",
+        "dataType": "INT"
+      }
+    ],
+    "metricFieldSpecs": [
       {
         "name": "transaction_date",
         "dataType": "FLOAT"
@@ -33,12 +43,6 @@
         "name": "created_at",
         "dataType": "FLOAT"
       },
-      {
-        "name": "transaction_confirmed",
-        "dataType": "INT"
-      }
-    ],
-    "metricFieldSpecs": [
       {
         "name": "transaction_amount",
         "dataType": "FLOAT"
