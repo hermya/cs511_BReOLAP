@@ -8,5 +8,6 @@ CREATE TABLE Transactions (
     transaction_category ENUM('Operational', 'Financial', 'ClientWithdrawal', 'Contingent', 'Regulatory') NOT NULL,
     transaction_confirmed BOOLEAN DEFAULT FALSE,
     asset_linked UUID,
+    counterparty_uuid UUID NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

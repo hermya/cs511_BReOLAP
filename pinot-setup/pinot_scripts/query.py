@@ -108,5 +108,15 @@ curs.execute("""
     ORDER BY confirmation_rate DESC;
 """)
 
+curs.execute("""
+SELECT asset.asset_name, asset.asset_class, counterparties.counterparty_name, SUM(transactions.transaction_amount) as sum
+FROM transactions
+JOIN counterparties ON transactions.counterparty_uuid = counterparties.counterparty_uuid
+JOIN asset ON transactions.asset_linked = asset.asset_uuid
+WHERE transactions.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
+AND asset.asset_class IN ('Crypto','Stocks', 'ETFs', 'Gold Bonds', 'Options', 'Futures')
+GROUP BY asset.asset_name, asset.asset_class, counterparties.counterparty_name
+""")
+
 # Close the connection
 conn.close()
