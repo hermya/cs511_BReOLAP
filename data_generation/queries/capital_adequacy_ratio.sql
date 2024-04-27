@@ -9,7 +9,7 @@ FROM (
             THEN asset_market_value * asset_quantity
             ELSE 0
         END) AS SumCapital,
-        SUM(a.asset_market_value * a.asset_quantity * r.risk_factor) AS TotalRiskAdjustedValue
+        SUM(a.asset_market_value * a.asset_quantity * r.risk_rating) AS TotalRiskAdjustedValue
     FROM
         assets a
     LEFT JOIN
