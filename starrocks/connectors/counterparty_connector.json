@@ -1,0 +1,17 @@
+{
+  "name": "starrocks-kafka-connector-counterparties",
+  "config": {
+    "connector.class": "com.starrocks.connector.kafka.StarRocksSinkConnector",
+    "topics": "counterparties_topic",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "true",
+    "value.converter.schemas.enable": "false",
+    "starrocks.http.url": "172.11.0.2:8030",
+    "starrocks.topic2table.map": "counterparties_topic:counterparties",
+    "starrocks.username": "kafka",
+    "starrocks.password": "12345",
+    "starrocks.database.name": "BREOLAP",
+    "sink.properties.strip_outer_array": "true"
+  }
+}
