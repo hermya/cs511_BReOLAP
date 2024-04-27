@@ -2,6 +2,19 @@ from pinotdb import connect
 
 conn = connect(host='localhost', port=8099, path='/query', scheme='http')
 curs = conn.cursor()
+
+#Verified - Alpha Generation
+curs.execute("""
+    SELECT asset.asset_name, asset.asset_class, counterparties.counterparty_name, SUM(transactions.transaction_amount) as sum
+    FROM transactions
+        JOIN counterparties ON transactions.counterparty_uuid = counterparties.counterparty_uuid
+        JOIN asset ON transactions.asset_linked = asset.asset_uuid
+    WHERE transactions.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
+    AND asset.asset_class IN ('Crypto','Stocks', 'ETFs', 'Gold Bonds', 'Options', 'Futures')
+    GROUP BY asset.asset_name, asset.asset_class, counterparties.counterparty_name
+""")
+
+#Verified - Capital Adequacy Ratio
 curs.execute("""
     SELECT
     SumCapital / TotalRiskAdjustedValue AS CalculatedValue
@@ -19,20 +32,8 @@ curs.execute("""
             asset_risk ON asset.asset_uuid = asset_risk.asset_uuid
     ) AS results;
 """)
-# for row in curs:
-#     print(row)
 
-curs.execute("""
-    SELECT transactions.symbol,
-       counterparties.counterparty_name,
-       SUM(transactions.amount) AS total_transaction_volume
-    FROM transactions
-    JOIN counterparties ON transactions.counterparty_uuid = counterparties.counterparty_uuid
-    WHERE transactions.transaction_type IN ('Payment', 'Withdrawal', 'InterestPayment', 'LoanRepayment')
-    GROUP BY transactions.symbol, counterparties.counterparty_name
-    ORDER BY total_transaction_volume DESC;
-""")
-
+#Verified - Counterparty Transaction Volume
 curs.execute("""
     SELECT counterparty_uuid,
        COUNT(*) AS transaction_count
@@ -42,11 +43,12 @@ curs.execute("""
     LIMIT 10;
 """)
 
+#Verified - Leverage Ratio
 curs.execute("""
     SELECT
     SUM(asset_market_value * asset_quantity) /
-    (SELECT SUM(amount) FROM liabilities) AS Ratio
-    FROM assets
+    (SELECT SUM(liability_amount) FROM liabilities) AS Ratio
+    FROM asset
     WHERE asset_class IN ('Stocks', 'Gold Bonds');
 """)
 
@@ -91,7 +93,7 @@ curs.execute("""
     )
     SELECT a.asset_name, b.asset_name, CORR(a.asset_market_value, b.asset_market_value) AS correlation
     FROM ranked_prices a
-    JOIN ranked_prices b ON a.rn = b.rn
+    JOIN ranked_prices b ON a.rn = b.rncd 
     WHERE a.asset_name = 'AAPL' AND b.asset_name = 'GOOGL'
 """)
 
@@ -112,16 +114,6 @@ ORDER BY
 
 """)
 
-#Verified - Query is working
-curs.execute("""
-SELECT asset.asset_name, asset.asset_class, counterparties.counterparty_name, SUM(transactions.transaction_amount) as sum
-FROM transactions
-JOIN counterparties ON transactions.counterparty_uuid = counterparties.counterparty_uuid
-JOIN asset ON transactions.asset_linked = asset.asset_uuid
-WHERE transactions.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
-AND asset.asset_class IN ('Crypto','Stocks', 'ETFs', 'Gold Bonds', 'Options', 'Futures')
-GROUP BY asset.asset_name, asset.asset_class, counterparties.counterparty_name
-""")
-
 # Close the connection
+
 conn.close()
