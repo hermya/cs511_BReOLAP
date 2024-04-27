@@ -143,6 +143,8 @@ services:
       - zookeeper
     ports:
       - 29092:29092
+    container_name: kafka
+    hostname: kafka
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -161,6 +163,9 @@ services:
       VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
       CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      CONNECT_PLUGIN_PATH: /kafka/connect/
+    volumes:
+      - ./assets/clickhouse-kafka-connect-v1.0.15.jar:/kafka/connect/debezium-connector-clickhouse/clickhouse-kafka-connect-v1.0.15.jar
     depends_on: [kafka]
     ports:
       - 8087:8083
