@@ -100,11 +100,11 @@ def generate_and_publish_asset_data(asset_index, num_rows, rows_per_minute):
     time_interval = calculate_time_interval(rows_per_minute)
     while rows_generated < num_rows:
         #Creating thread to publish asset data
-        asset_publish_thread = threading.Thread(target = publish_data, args = (asset_array, "asset-topic", time_interval))
+        asset_publish_thread = threading.Thread(target = publish_data, args = (asset_array, "asset_topic", time_interval))
         #Creating thread to publish risk data
-        risk_publish_thread = threading.Thread(target = publish_data, args = (risk_array, "risk-topic", time_interval))
+        risk_publish_thread = threading.Thread(target = publish_data, args = (risk_array, "risk_topic", time_interval))
         #Creating a thread to publish transactions data
-        transaction_publish_thread = threading.Thread(target = publish_data, args = (transactions_array, "transactions-topic", time_interval))
+        transaction_publish_thread = threading.Thread(target = publish_data, args = (transactions_array, "transactions_topic", time_interval))
         #Creating a new ReturnableThread to generate asset and risk data
         data_generation_thread = ReturnValueThread(target = generate_asset_data, args = (rows_generated, generation_batch))
 
@@ -121,9 +121,9 @@ def generate_and_publish_asset_data(asset_index, num_rows, rows_per_minute):
         rows_generated += generation_batch
 
     #Publishing last data
-    asset_publish_thread = threading.Thread(target = publish_data, args = (asset_array, "asset-topic", time_interval))
-    risk_publish_thread = threading.Thread(target = publish_data, args = (risk_array, "risk-topic", time_interval))
-    transaction_publish_thread = threading.Thread(target = publish_data, args = (transactions_array, "transactions-topic", time_interval))
+    asset_publish_thread = threading.Thread(target = publish_data, args = (asset_array, "asset_topic", time_interval))
+    risk_publish_thread = threading.Thread(target = publish_data, args = (risk_array, "risk_topic", time_interval))
+    transaction_publish_thread = threading.Thread(target = publish_data, args = (transactions_array, "transactions_topic", time_interval))
 
     asset_publish_thread.start()
     risk_publish_thread.start()
@@ -214,7 +214,7 @@ def generate_and_publish_liabilities_data(liabilites_index, num_rows, rows_per_m
     time_interval = calculate_time_interval(rows_per_minute)
     while rows_generated < num_rows:
         #Creating thread to publish asset data
-        liabilities_publish_thread = threading.Thread(target = publish_data, args = (liabilties_array, "liabilities-topic", time_interval))
+        liabilities_publish_thread = threading.Thread(target = publish_data, args = (liabilties_array, "liabilities_topic", time_interval))
         #Creating thread to generate data
         data_generation_thread = ReturnValueThread(target = generate_liabilities_data, args = (rows_generated, generation_batch))
 
@@ -227,7 +227,7 @@ def generate_and_publish_liabilities_data(liabilites_index, num_rows, rows_per_m
         rows_generated += generation_batch
 
     #Publishing last data
-    publish_data(liabilties_array, "liabilities-topic", time_interval)
+    publish_data(liabilties_array, "liabilities_topic", time_interval)
 
 def generate_liabilities_data(liabilities_index, num_rows):
 
@@ -313,7 +313,7 @@ def generate_and_publish_counterparty_data():
             "created_at": created_at
         }
         counterparty_data.append(json_object)
-    publish_data(counterparty_data, "counterparties-topic", 0)
+    publish_data(counterparty_data, "counterparties_topic", 0)
     print("Completed generating " + str(len(counterparty_data)) + " elements for the counterparty table")
 
 '''
@@ -338,7 +338,7 @@ counterparty_array = generate_counterparty_array()
 print("Pritning generated counterparty uuids array")
 #print(counterparty_array)
 
-publish_counterparty_data = int(sys.argv[9])
+publish_counterparty_data = int(sys.argv[7])
 
 if publish_counterparty_data == 1:
     generate_and_publish_counterparty_data()
@@ -346,8 +346,6 @@ if publish_counterparty_data == 1:
 
 t1.start()
 t2.start()
-#t3.start()
 
 t1.join()
 t2.join()
-#t3.join()
