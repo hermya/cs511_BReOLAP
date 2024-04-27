@@ -1,10 +1,10 @@
 WITH ranked_prices AS (
-    SELECT symbol, price, timestamp,
+    SELECT asset_name, asset_market_value, timestamp,
            ROW_NUMBER() OVER (PARTITION BY symbol ORDER BY timestamp) AS rn
-    FROM market_data
-    WHERE symbol IN ('AAPL', 'GOOGL')
+    FROM asset
+    WHERE asset_name IN ('AAPL', 'GOOGL')
 )
-SELECT a.symbol, b.symbol, CORR(a.price, b.price) AS correlation
+SELECT a.asset_name, b.asset_name, CORR(a.asset_market_value, b.asset_market_value) AS correlation
 FROM ranked_prices a
 JOIN ranked_prices b ON a.rn = b.rn
-WHERE a.symbol = 'AAPL' AND b.symbol = 'GOOGL'
+WHERE a.asset_name = 'AAPL' AND b.asset_name = 'GOOGL'
