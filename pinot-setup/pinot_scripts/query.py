@@ -84,26 +84,44 @@ curs.execute("""
 
 curs.execute("""
     WITH ranked_prices AS (
-    SELECT symbol, price, timestamp,
+    SELECT asset_name, asset_market_value, timestamp,
            ROW_NUMBER() OVER (PARTITION BY symbol ORDER BY timestamp) AS rn
-    FROM market_data
-    WHERE symbol IN ('AAPL', 'GOOGL')
+    FROM asset
+    WHERE asset_name IN ('AAPL', 'GOOGL')
     )
-    SELECT a.symbol, b.symbol, CORR(a.price, b.price) AS correlation
+    SELECT a.asset_name, b.asset_name, CORR(a.asset_market_value, b.asset_market_value) AS correlation
     FROM ranked_prices a
     JOIN ranked_prices b ON a.rn = b.rn
-    WHERE a.symbol = 'AAPL' AND b.symbol = 'GOOGL'
+    WHERE a.asset_name = 'AAPL' AND b.asset_name = 'GOOGL'
 """)
 
 
-
-
+#Verified - Query is working
 curs.execute("""
-    SELECT category,
-       SUM(CASE WHEN confirmed THEN 1 ELSE 0 END) AS confirmed_count,
-       COUNT(*) AS total_count,
-       SUM(CASE WHEN confirmed THEN 1 ELSE 0 END) / COUNT(*) AS confirmation_rate
-    FROM Transactions
-    GROUP BY category
-    ORDER BY confirmation_rate DESC;
+SELECT 
+    transaction_category,
+    SUM(CASE WHEN transaction_confirmed = 1 THEN 1 ELSE 0 END) AS confirmed_count,
+    COUNT(*) AS total_count,
+    CAST(SUM(CASE WHEN transaction_confirmed = 1 THEN 1 ELSE 0 END) AS DECIMAL) / COUNT(*) AS confirmation_rate
+FROM 
+    transactions
+GROUP BY 
+    transaction_category
+ORDER BY 
+    confirmation_rate DESC;
+
 """)
+
+#Verified - Query is working
+curs.execute("""
+SELECT asset.asset_name, asset.asset_class, counterparties.counterparty_name, SUM(transactions.transaction_amount) as sum
+FROM transactions
+JOIN counterparties ON transactions.counterparty_uuid = counterparties.counterparty_uuid
+JOIN asset ON transactions.asset_linked = asset.asset_uuid
+WHERE transactions.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
+AND asset.asset_class IN ('Crypto','Stocks', 'ETFs', 'Gold Bonds', 'Options', 'Futures')
+GROUP BY asset.asset_name, asset.asset_class, counterparties.counterparty_name
+""")
+
+# Close the connection
+conn.close()

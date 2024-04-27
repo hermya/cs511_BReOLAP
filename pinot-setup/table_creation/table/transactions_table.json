@@ -10,7 +10,7 @@
     "tableIndexConfig": {
       "loadMode": "MMAP",
       "streamConfigs": {
-        "streamType": "kafka",
+        "streamType": "kafka",  
         "stream.kafka.consumer.type": "lowlevel",
         "stream.kafka.topic.name": "transactions-topic",
         "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.stream.kafka.KafkaJSONMessageDecoder",
