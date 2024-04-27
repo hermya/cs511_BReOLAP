@@ -8,8 +8,8 @@ from datetime import datetime, timedelta
 import threading
 import sys
 
-#bootstrap_servers = "192.168.0.111:29092"
-bootstrap_servers = "localhost:29092"
+bootstrap_servers = "192.168.0.111:29092"
+#bootstrap_servers = "localhost:29092"
 publish_batch = int(sys.argv[1])
 generation_batch = int(sys.argv[2])
 
