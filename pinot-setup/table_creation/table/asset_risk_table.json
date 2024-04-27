@@ -1,9 +1,9 @@
 {
-    "tableName": "asset-risk",
+    "tableName": "asset_risk",
     "tableType": "REALTIME",
     "segmentsConfig": {
       "timeColumnName": "ts",
-      "schemaName": "asset-risk",
+      "schemaName": "asset_risk",
       "replicasPerPartition": "1"
     },
     "tenants": {},
@@ -12,7 +12,7 @@
       "streamConfigs": {
         "streamType": "kafka",
         "stream.kafka.consumer.type": "lowlevel",
-        "stream.kafka.topic.name": "risk-topic",
+        "stream.kafka.topic.name": "risk_topic",
         "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.stream.kafka.KafkaJSONMessageDecoder",
         "stream.kafka.consumer.factory.class.name": "org.apache.pinot.plugin.stream.kafka20.KafkaConsumerFactory",
         "stream.kafka.broker.list": "kafka:9092",

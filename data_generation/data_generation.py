@@ -66,52 +66,83 @@ def random_date(start_date, end_date):
     random_date = start_date + timedelta(seconds = random_seconds)
     return random_date
 
-# Define asset types and liquidity ratings
-asset_classes = ["Crypto","Cash", "Stocks", "ETFs", "NFTs", "Gold Bonds", "Bonds", "Options", "Futures", "Real-Estate"]
-liquidity_ratings = ["High", "Medium", "Low"]
-transaction_types = ["Inflow","Outflow"]
+def generate_counterparty_array():
+    counterparty_array = []
+    for i in range(30):
+        counterparty_array.append(str(uuid.uuid4()))
+    return counterparty_array
 
-#This will generate asset and asset risk data
+# Define asset types and liquidity ratings
+asset_classes = ["Crypto","Cash", "Stocks", "ETFs", "NFTs", "Gold Bonds", "Options", "Futures", "Real-Estate"]
+liquidity_ratings = ["High", "Medium", "Low"]
+stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "FB", "TSLA", "BRK.B", "NVDA", "JPM", "JNJ", "V", "PG", "MA", "HD", "UNH", "DIS", "BAC", "PYPL", "INTC", "CMCSA", "KO", "T", "MRK", "CRM", "NKE"]
+cryptocurrencies = ["BTC", "ETH", "XRP", "ADA", "SOL"]
+gold_bonds = ["IAU", "GLD", "SGOL", "BAR", "OUNZ"]
+transaction_types = ["Inflow","Outflow"]
+transaction_types = ["Deposit", "Payment", "Withdrawal", "InterestPayment", "LoanRepayment", "Other"]
+transaction_categories = ["Operational", "Financial", "ClientWithdrawal", "Contingent", "Regulatory"]
+
+def resolve_asset_name(asset_class):
+    if asset_class == "Crypto":
+        return random.choice(cryptocurrencies)
+    elif asset_class in ["Stocks", "ETFs", "Options", "Futures"]:
+        return random.choice(stocks)
+    elif asset_class in ["Gold Bonds"]:
+        return random.choice(gold_bonds)
+    else:
+        return ""    
+
+#Code to generate and publish data on topics - asset, risk and transctions
 def generate_and_publish_asset_data(asset_index, num_rows, rows_per_minute):
-    asset_array, risk_array = generate_asset_data(asset_index, generation_batch)
+    asset_array, risk_array, transactions_array = generate_asset_data(asset_index, generation_batch)
 
     rows_generated = generation_batch
     time_interval = calculate_time_interval(rows_per_minute)
     while rows_generated < num_rows:
         #Creating thread to publish asset data
-        asset_publish_thread = threading.Thread(target = publish_data, args = (asset_array, "asset-topic", time_interval))
+        asset_publish_thread = threading.Thread(target = publish_data, args = (asset_array, "asset_topic", time_interval))
         #Creating thread to publish risk data
-        risk_publish_thread = threading.Thread(target = publish_data, args = (risk_array, "risk-topic", time_interval))
+        risk_publish_thread = threading.Thread(target = publish_data, args = (risk_array, "risk_topic", time_interval))
+        #Creating a thread to publish transactions data
+        transaction_publish_thread = threading.Thread(target = publish_data, args = (transactions_array, "transactions_topic", time_interval))
         #Creating a new ReturnableThread to generate asset and risk data
         data_generation_thread = ReturnValueThread(target = generate_asset_data, args = (rows_generated, generation_batch))
 
         asset_publish_thread.start()
         risk_publish_thread.start()
+        transaction_publish_thread.start()
         data_generation_thread.start()
 
         asset_publish_thread.join()
         risk_publish_thread.join()    
-        asset_array, risk_array = data_generation_thread.join()
+        transaction_publish_thread.join()
+        asset_array, risk_array, transactions_array = data_generation_thread.join()
         
         rows_generated += generation_batch
 
     #Publishing last data
-    asset_publish_thread = threading.Thread(target = publish_data, args = (asset_array, "asset-topic", time_interval))
-    risk_publish_thread = threading.Thread(target = publish_data, args = (risk_array, "risk-topic", time_interval))
+    asset_publish_thread = threading.Thread(target = publish_data, args = (asset_array, "asset_topic", time_interval))
+    risk_publish_thread = threading.Thread(target = publish_data, args = (risk_array, "risk_topic", time_interval))
+    transaction_publish_thread = threading.Thread(target = publish_data, args = (transactions_array, "transactions_topic", time_interval))
+
     asset_publish_thread.start()
     risk_publish_thread.start()
+    transaction_publish_thread.start()
     asset_publish_thread.join()
     risk_publish_thread.join()
+    transaction_publish_thread.join()
 
     time_interval = calculate_time_interval(rows_per_minute)
 
 def generate_asset_data(asset_index, num_rows):
     asset_array = []
     risk_array = []
+    transaction_array = []
     for i in range(num_rows):
         asset_id = (i+1) + asset_index
         asset_uuid = str(uuid.uuid4())
         asset_class = random.choice(asset_classes)
+        asset_name = resolve_asset_name(asset_class)
         asset_cost = random.uniform(100, 10000000000)
         liquidity_rating = random.choice(liquidity_ratings)
         if asset_class in ["Crypto", "Stocks","ETFs","Options","Futures"]:
@@ -123,17 +154,16 @@ def generate_asset_data(asset_index, num_rows):
             "asset_id":asset_id,
             "asset_uuid":asset_uuid,
             "asset_class":asset_class,
+            "asset_name": asset_name,
             "asset_cost":asset_cost,
             "asset_market_value":asset_market_value,
             "asset_quantity":asset_quantity,
             "liquidity_rating":liquidity_rating,
             "asset_owner": str(uuid.uuid4()),
             "portfolio_manager": str(uuid.uuid4()),
-            "value_timestamp": str(time.time())
+            "value_timestamp":  time.time()
         }
         asset_array.append(json_object)
-        #print(json_object)
-        # push_to_kafka(json_object)
 
         risk_uuid = str(uuid.uuid4())
         risk_factor = random.randint(0,100)/100
@@ -143,69 +173,40 @@ def generate_asset_data(asset_index, num_rows):
             "risk_uuid": risk_uuid,
             "risk_rating": risk_factor
         }
-        #print("Printing risk array")
-        #print(json_object_risk)
         risk_array.append(json_object_risk)
-    print("Generated " + str(num_rows) + " asset and risk records")
-    return asset_array, risk_array
 
-
-transaction_types = ["Deposit", "Payment", "Withdrawal", "InterestPayment", "LoanRepayment", "Other"]
-transaction_categories = ["Operational", "Financial", "ClientWithdrawal", "Contingent", "Regulatory"]
-
-def generate_and_publish_transactions_data(transactions_index, num_rows, rows_per_minute):
-    transactions_array = generate_transactions_data(transactions_index, generation_batch)
-
-    rows_generated = generation_batch
-    time_interval = calculate_time_interval(rows_per_minute)
-    while rows_generated < num_rows:
-        #Creating thread to publish asset data
-        transctions_publish_thread = threading.Thread(target = publish_data, args = (transactions_array, "transactions-topic", time_interval))
-        #Creating thread to generate data
-        data_generation_thread = ReturnValueThread(target = generate_transactions_data, args = (rows_generated, generation_batch))
-
-        transctions_publish_thread.start()
-        data_generation_thread.start()
-
-        transctions_publish_thread.join()    
-        transactions_array = data_generation_thread.join()
-        
-        rows_generated += generation_batch
-
-    #Publishing last data
-    publish_data(transactions_array, "transactions-topic", time_interval)
-
-def generate_transactions_data(transaction_index, num_rows):
-    transaction_array = []
-    for i in range(num_rows):
-        transaction_id = i+1 + transaction_index
+        transaction_id = (i+1) + asset_index
         transaction_uuid = str(uuid.uuid4())
         transaction_date = time.time()
         transaction_amount = random.randint(100, 10000000)
         transaction_type = random.choice(transaction_types)
         transaction_due_date = transaction_date + random.randint(100,10000)
         transaction_category = random.choice(transaction_categories)
-        asset_linked = str(uuid.uuid4())
+        #asset_linked = str(uuid.uuid4())
         created_at = time.time()
         transaction_confirmed = random.randint(0,1)
-        json_object = {
+        json_object_transaction = {
             "transaction_id":transaction_id,
             "transaction_uuid":transaction_uuid,
-            "transaction_date":str(transaction_date),
+            "transaction_date":transaction_date,
             "transaction_amount":transaction_amount,
             "transaction_type": transaction_type,
             "transaction_due_date": transaction_due_date,
             "transaction_category": transaction_category,
             "transaction_confirmed": transaction_confirmed,
-            "asset_linked": asset_linked,
-            "created_at": str(created_at)   
+            "asset_linked": asset_uuid,
+            "counterparty_uuid": random.choice(counterparty_array),
+            "created_at": created_at   
         }
-        transaction_array.append(json_object)
+        transaction_array.append(json_object_transaction)
+
     print("Generated " + str(len(transaction_array)) + " elements for the transactions table")
-    return transaction_array
+    print("Generated " + str(num_rows) + " asset and risk records")
+    return asset_array, risk_array, transaction_array
 
 statuses = ["Active","Paid Off", "Defaulted"]
 
+#Code to generate and publish liabilties data
 def generate_and_publish_liabilities_data(liabilites_index, num_rows, rows_per_minute):
     liabilties_array = generate_liabilities_data(liabilites_index, generation_batch)
 
@@ -213,7 +214,7 @@ def generate_and_publish_liabilities_data(liabilites_index, num_rows, rows_per_m
     time_interval = calculate_time_interval(rows_per_minute)
     while rows_generated < num_rows:
         #Creating thread to publish asset data
-        liabilities_publish_thread = threading.Thread(target = publish_data, args = (liabilties_array, "liabilities-topic", time_interval))
+        liabilities_publish_thread = threading.Thread(target = publish_data, args = (liabilties_array, "liabilities_topic", time_interval))
         #Creating thread to generate data
         data_generation_thread = ReturnValueThread(target = generate_liabilities_data, args = (rows_generated, generation_batch))
 
@@ -226,7 +227,7 @@ def generate_and_publish_liabilities_data(liabilites_index, num_rows, rows_per_m
         rows_generated += generation_batch
 
     #Publishing last data
-    publish_data(liabilties_array, "liabilities-topic", time_interval)
+    publish_data(liabilties_array, "liabilities_topic", time_interval)
 
 def generate_liabilities_data(liabilities_index, num_rows):
 
@@ -236,11 +237,11 @@ def generate_liabilities_data(liabilities_index, num_rows):
         bank_id = str(uuid.uuid4())
         liability_amount = random.randint(100, 10000000)
         interest_rate = random.uniform(6,12)
-        start_date = str(time.time() - random.randint(10000, 50000))
-        maturity_date = str(time.time() + random.randint(10000, 50000))
-        counterparty_uuid = str(uuid.uuid4())
+        start_date = time.time() - random.randint(10000, 50000)
+        maturity_date = time.time() + random.randint(10000, 50000)
+        counterparty_uuid = random.choice(counterparty_array)
         status = random.choice(statuses)
-        created_at = str(time.time())
+        created_at = time.time()
         created_by = str(uuid.uuid4())
         json_object = {
             "liability_id": liability_id,
@@ -255,8 +256,65 @@ def generate_liabilities_data(liabilities_index, num_rows):
             "created_by": created_by
         }
         liabilties_array.append(json_object)
+    #print("Printing liabilties object")
+    #print(json_object)
     print("Generated " + str(len(liabilties_array)) + " elements for the liabilties table")
     return liabilties_array
+
+counterparties = [
+    "Goldman Sachs Group",
+    "JPMorgan Chase & Co.",
+    "Morgan Stanley",
+    "Citigroup Inc.",
+    "Bank of America Corporation",
+    "Wells Fargo & Company",
+    "Barclays PLC",
+    "HSBC Holdings PLC",
+    "Deutsche Bank AG",
+    "Credit Suisse Group AG",
+    "UBS Group AG",
+    "BNP Paribas SA",
+    "Société Générale SA",
+    "Nomura Holdings Inc.",
+    "Mizuho Financial Group Inc.",
+    "The Blackstone Group Inc.",
+    "The Carlyle Group Inc.",
+    "KKR & Co. Inc.",
+    "The Vanguard Group Inc.",
+    "The BlackRock Group",
+    "State Street Corporation",
+    "Northern Trust Corporation",
+    "Fidelity Investments",
+    "PIMCO (Pacific Investment Management Company LLC)",
+    "Franklin Templeton Investments",
+    "T. Rowe Price Group",
+    "Charles Schwab Corporation",
+    "Raymond James Financial Inc.",
+    "American Express Company",
+    "Discover Financial Services"
+]
+
+counterparty_types = ['Individual', 'Institution', 'Company', 'Other']
+
+def generate_and_publish_counterparty_data():
+    counterparty_data = []
+    counterparty_counter = 0
+    for i in range(len(counterparty_array)):
+        counterparty_id = i
+        counterparty_uuid = counterparty_array[i]
+        counterparty_name = counterparties[i]
+        counterparty_type = random.choice(counterparty_types)
+        created_at = time.time()
+        json_object = {
+            "counterparty_id": counterparty_id,
+            "counterparty_uuid": counterparty_uuid,
+            "counterparty_name": counterparty_name,
+            "counterparty_type": counterparty_type,
+            "created_at": created_at
+        }
+        counterparty_data.append(json_object)
+    publish_data(counterparty_data, "counterparties_topic", 0)
+    print("Completed generating " + str(len(counterparty_data)) + " elements for the counterparty table")
 
 '''
 CLI Arguments - 
@@ -267,18 +325,27 @@ CLI Arguments -
 5 -> transcations data records per minute
 6 -> liabilities data records
 7 -> liabilities data records per minute
+8 -> publish counterparty data
 '''
 print("Printing arguments")
 print(sys.argv)
 
 t1 = threading.Thread(target = generate_and_publish_asset_data, args = (0, int(sys.argv[3]), int(sys.argv[4])))
-t2 = threading.Thread(target = generate_and_publish_liabilities_data, args = (0, int(sys.argv[5]), int(sys.argv[6])))
-t3 = threading.Thread(target = generate_and_publish_transactions_data, args = (0, int(sys.argv[7]), int(sys.argv[8])))
+t2 = threading.Thread(target = generate_and_publish_liabilities_data, args = (0, int(sys.argv[3]), int(sys.argv[4])))
+#t3 = threading.Thread(target = generate_and_publish_transactions_data, args = (0, int(sys.argv[7]), int(sys.argv[8])))
+
+counterparty_array = generate_counterparty_array()
+print("Pritning generated counterparty uuids array")
+#print(counterparty_array)
+
+publish_counterparty_data = int(sys.argv[5])
+
+if publish_counterparty_data == 1:
+    generate_and_publish_counterparty_data()
+
 
 t1.start()
 t2.start()
-t3.start()
 
 t1.join()
 t2.join()
-t3.join()
