@@ -40,7 +40,7 @@ services:
     depends_on:
       - starrocks-fe
     healthcheck:
-      test: 'mysql -uroot -h 172.11.0.3 -P 9030 -e "show backends\G" |grep "Alive: true"'
+      test: 'mysql -uroot -h 172.11.0.2 -P 9030 -e "show backends\G" |grep "Alive: true"'
       interval: 10s
       timeout: 5s
       retries: 3
