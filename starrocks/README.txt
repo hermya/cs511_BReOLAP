@@ -10,12 +10,12 @@ Then follow below steps for creating connector:
 wget https://github.com/StarRocks/starrocks-connector-for-kafka/releases/download/v1.0.3/starrocks-kafka-connector-1.0.3.tar.gz
 tar -xzvf starrocks-kafka-connector-1.0.3.tar.gz
 
-2. copy the jar folder to debezium container in kafka/connect folder
+2. copy the jar folder to debezium container in kafka/connect folder OR volumn bound
 
 3. make the following change in config/connect-distributed.properties in debezium container
 rest.host.name=172.11.0.8 -> rest.host.name=localhost
 
-4. restart debezium container
+4. restart debezium container // Dont think will have to do this if we volumn bound the jar files.
 
 5. run command in your host machine to create connector:
 curl -i http://172.11.0.8:8083/connectors -H "Content-Type: application/json" -X POST -d @connectors/any_sink_connector.json
