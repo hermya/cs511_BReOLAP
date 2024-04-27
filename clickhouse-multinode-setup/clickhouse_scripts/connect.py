@@ -1,6 +1,6 @@
 import clickhouse_connect
 
-client = clickhouse_connect.get_client(host='192.168.0.111',
+client = clickhouse_connect.get_client(host='',
                                        user='default',
                                        connect_timeout=15,
                                        database='default',
@@ -8,9 +8,133 @@ client = clickhouse_connect.get_client(host='192.168.0.111',
 
 
 # client.command('CREATE TABLE test_command (col_1 String, col_2 DateTime) Engine MergeTree ORDER BY tuple()')
-for i in range(1000):
-    client.command('INSERT INTO test_command (col_1, col_2) VALUES (%s, %s)', 
-              ('value_for_col_1', '2024-04-23 13:10:00'))
+for i in range(100):
+    result = client.command('''
+        SELECT a.asset_name, a.asset_class, c.counterparty_name, SUM(t.amount)
+        FROM transactions t
+        JOIN counterparties c ON t.counterparty_uuid = c.counterparty_uuid
+        JOIN asset a ON t.asset_linked = a.asset_uuid
+        WHERE t.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
+    ''')
+print(result) 
 
-result = client.command('SELECT count() FROM test_command')
+for i in range(100):
+    result = client.command('''
+        SELECT
+            SumCapital / TotalRiskAdjustedValue AS CalculatedValue
+        FROM (
+            SELECT
+                SUM(CASE
+                    WHEN asset_class IN ('Stocks', 'Gold Bonds', 'Futures', 'Options')
+                    THEN asset_market_value * asset_quantity
+                    ELSE 0
+                END) AS SumCapital,
+                SUM(a.asset_market_value * a.asset_quantity * r.risk_rating) AS TotalRiskAdjustedValue
+            FROM
+                assets a
+            LEFT JOIN
+                risk r ON a.asset_uuid = r.asset_uuid
+        ) AS results;
+    ''')
+print(result) 
+
+for i in range(100):
+    result = client.command('''
+        SELECT counterparty_uuid,
+        COUNT(*) AS transaction_count
+        FROM transactions
+        GROUP BY counterparty_uuid
+        ORDER BY transaction_count DESC
+        LIMIT 10;
+    ''')
+print(result) 
+
+for i in range(100):
+    result = client.command('''
+        SELECT
+            SUM(asset_market_value * asset_quantity) /
+            (SELECT SUM(amount) FROM Liabilities) AS Ratio
+        FROM assets
+        WHERE asset_class IN ('Stocks', 'Gold Bonds');
+    ''')
+print(result) 
+
+for i in range(100):
+    result = client.command('''
+        SELECT
+        (SELECT SUM(asset_market_value * asset_quantity)
+        FROM assets
+        WHERE asset_class IN ('Stocks', 'Gold Bonds')) /
+        (SELECT SUM(amount)
+        FROM transactions
+        WHERE due_date BETWEEN CURRENT_DATE AND DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY)
+        AND transaction_type IN ('Payment', 'Withdrawal', 'LoanRepayment')
+        AND confirmed = TRUE) AS LiquidityCoverageRatio;
+    ''')
+print(result) 
+
+
+for i in range(100):
+    result = client.command('''
+        SELECT
+            SUM(asset_market_value) AS TotalPortfolioValue,
+            AVG(daily_profit_loss) AS AverageDailyIncrease,
+            MAX(daily_profit_loss) AS MaxDailyAddition,
+            MIN(daily_profit_loss) AS MinDailyAddition
+        FROM (
+            SELECT
+                DATE(FROM_UNIXTIME(value_timestamp / 1000)) AS val_date,
+                SUM(asset_market_value) AS asset_market_value,
+                (SUM(asset_market_value - asset_cost) - LAG(SUM(asset_market_value - asset_cost)) OVER (ORDER BY DATE(FROM_UNIXTIME(value_timestamp / 1000)))) AS daily_profit_loss
+            FROM assets
+            GROUP BY DATE(FROM_UNIXTIME(value_timestamp / 1000))
+        ) AS daily_data;
+    ''')
+print(result) 
+
+for i in range(100):
+    result = client.command('''
+        SELECT
+            SumCapital / TotalRiskAdjustedValue AS CalculatedValue
+        FROM (
+            SELECT
+                SUM(CASE
+                    WHEN asset_class IN ('Stocks', 'Gold Bonds')
+                    THEN asset_market_value * asset_quantity
+                    ELSE 0
+                END) AS SumCapital,
+                SUM(a.asset_market_value * a.asset_quantity * r.risk_factor) AS TotalRiskAdjustedValue
+            FROM
+                assets a
+            LEFT JOIN
+                risk r ON a.asset_uuid = r.asset_uuid
+        ) AS results;
+    ''')
+print(result) 
+
+for i in range(100):
+    result = client.command('''
+        WITH ranked_prices AS (
+            SELECT asset_name, asset_market_value, timestamp,
+                ROW_NUMBER() OVER (PARTITION BY symbol ORDER BY timestamp) AS rn
+            FROM asset
+            WHERE asset_name IN ('AAPL', 'GOOGL')
+        )
+        SELECT a.asset_name, b.asset_name, CORR(a.asset_market_value, b.asset_market_value) AS correlation
+        FROM ranked_prices a
+        JOIN ranked_prices b ON a.rn = b.rn
+        WHERE a.asset_name = 'AAPL' AND b.asset_name = 'GOOGL'
+    ''')
+print(result) 
+
+for i in range(100):
+    result = client.command('''
+        SELECT category,
+        SUM(CASE WHEN confirmed THEN 1 ELSE 0 END) AS confirmed_count,
+        COUNT(*) AS total_count,
+        SUM(CASE WHEN confirmed THEN 1 ELSE 0 END) / COUNT(*)::DECIMAL AS confirmation_rate
+        FROM Transactions
+        GROUP BY category
+        ORDER BY confirmation_rate DESC;
+    ''')
 print(result) 
