@@ -331,14 +331,14 @@ print("Printing arguments")
 print(sys.argv)
 
 t1 = threading.Thread(target = generate_and_publish_asset_data, args = (0, int(sys.argv[3]), int(sys.argv[4])))
-t2 = threading.Thread(target = generate_and_publish_liabilities_data, args = (0, int(sys.argv[5]), int(sys.argv[6])))
+t2 = threading.Thread(target = generate_and_publish_liabilities_data, args = (0, int(sys.argv[3]), int(sys.argv[4])))
 #t3 = threading.Thread(target = generate_and_publish_transactions_data, args = (0, int(sys.argv[7]), int(sys.argv[8])))
 
 counterparty_array = generate_counterparty_array()
 print("Pritning generated counterparty uuids array")
 #print(counterparty_array)
 
-publish_counterparty_data = int(sys.argv[7])
+publish_counterparty_data = int(sys.argv[5])
 
 if publish_counterparty_data == 1:
     generate_and_publish_counterparty_data()
