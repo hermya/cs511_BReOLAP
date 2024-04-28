@@ -107,6 +107,8 @@ services:
 
   debezium:
     image: debezium/connect:1.4
+    hostname: connect
+    container_name: connect
     environment:
       BOOTSTRAP_SERVERS: kafka:9092
       GROUP_ID: 1
