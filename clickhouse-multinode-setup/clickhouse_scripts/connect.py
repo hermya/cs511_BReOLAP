@@ -1,26 +1,26 @@
 import clickhouse_connect
 import time
-client = clickhouse_connect.get_client(host='192.168.0.111',
+import os
+import sys
+client = clickhouse_connect.get_client(host='localhost',
                                        user='default',
                                        connect_timeout=15,
                                        database='default',
-                                       settings={'distributed_ddl_task_timeout':300})
+                                       settings={'distributed_ddl_task_timeout':30000})
+os.getcwd()
+path = os.getcwd() + "/" + sys.argv[1]
+print("Reading script from ", path)
+script = ""
+with open(path, 'r') as file:
+    script = file.read()
 
-
-# client.command('CREATE TABLE test_command (col_1 String, col_2 DateTime) Engine MergeTree ORDER BY tuple()')
 avg_query_time = []
 for i in range(100):
     st = time.time()
-    result = client.command('''
-    SELECT a.asset_name, a.asset_class, c.counterparty_name, SUM(t.transaction_amount)
-        FROM transactions_topic t
-        JOIN counterparties_topic c ON t.counterparty_uuid = c.counterparty_uuid
-        JOIN asset_topic a ON t.asset_linked = a.asset_uuid
-        WHERE t.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
-        GROUP BY a.asset_name, a.asset_class, c.counterparty_name
-    ''')
-    et = time.time() - st
-    avg_query_time.append(et)
+    result = client.command(script)
+    avg_query_time.append(st - time.time())
+    time.sleep(1)
+
 print(f'Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
 print(f'Max query execution time: {max(avg_query_time)}')
 print(f'Min query execution time: {min(avg_query_time)}')
