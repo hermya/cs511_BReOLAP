@@ -17,7 +17,8 @@ client = clickhouse_connect.get_client(host='localhost',
 csvstore = []
 
 avg_query_time = []
-for i in range(100):
+#JOIN
+for i in range(110):
     st = time.time()
     result = client.command('''
     SELECT a.asset_name, a.asset_class, c.counterparty_name, SUM(t.transaction_amount)
@@ -28,14 +29,16 @@ for i in range(100):
         GROUP BY a.asset_name, a.asset_class, c.counterparty_name
     ''')
     et = time.time() - st
-    avg_query_time.append(et)
+    if i > 10:
+        avg_query_time.append(et)
 print(f'Alpha Generation: Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
 print(f'Alpha Generation: Max query execution time: {max(avg_query_time)}')
 print(f'Alpha Generation: Min query execution time: {min(avg_query_time)}')
 csvstore.append(["Alpha Generation",sum(avg_query_time)/len(avg_query_time), max(avg_query_time), min(avg_query_time)])
 
+#JOIN
 avg_query_time = []
-for i in range(100):
+for i in range(110):
     st = time.time()
     result = client.command('''
         SELECT
@@ -55,14 +58,16 @@ for i in range(100):
         ) AS results;
     ''')
     et = time.time() - st
-    avg_query_time.append(et)
+    if i > 10:
+        avg_query_time.append(et)
 print(f'Capital Adequacy Ratio : Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
 print(f'Capital Adequacy Ratio: Max query execution time: {max(avg_query_time)}')
 print(f'Capital Adequacy Ratio : Min query execution time: {min(avg_query_time)}')
 csvstore.append(["Capital Adequacy Ratio", sum(avg_query_time)/len(avg_query_time), max(avg_query_time), min(avg_query_time)])
 
+#AGGREGATION
 avg_query_time = []
-for i in range(100):
+for i in range(110):
     st = time.time()
     result = client.command('''
         SELECT counterparty_uuid,
@@ -73,14 +78,16 @@ for i in range(100):
         LIMIT 10;
     ''')
     et = time.time() - st
-    avg_query_time.append(et)
+    if i > 10:
+        avg_query_time.append(et)
 print(f'Counterparty Transaction Volumne Analysis : Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
 print(f'Counterparty Transaction Volumne Analysis : Max query execution time: {max(avg_query_time)}')
 print(f'Counterparty Transaction Volumne Analysis : Min query execution time: {min(avg_query_time)}')
 csvstore.append(["Counterparty Transaction Volumne Analysis", sum(avg_query_time)/len(avg_query_time), max(avg_query_time), min(avg_query_time)])
 
+#AGGREGATION
 avg_query_time = []
-for i in range(100):
+for i in range(110):
     st = time.time()
     result = client.command('''
         SELECT
@@ -90,14 +97,16 @@ for i in range(100):
         WHERE asset_class IN ('Stocks', 'Gold Bonds');
     ''')
     et = time.time() - st
-    avg_query_time.append(et)
+    if i > 10:
+        avg_query_time.append(et)
 print(f'Leverage Ratio : Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
 print(f'Leverage Ratio: Max query execution time: {max(avg_query_time)}')
 print(f'Leverage Ratio: Min query execution time: {min(avg_query_time)}')
 csvstore.append(["Leverage Ratio", sum(avg_query_time)/len(avg_query_time), max(avg_query_time), min(avg_query_time)])
 
+#AGGREGATION
 avg_query_time = []
-for i in range(100):
+for i in range(110):
     st = time.time()
     result = client.command('''
         SELECT
@@ -111,14 +120,16 @@ for i in range(100):
         AND transaction_confirmed = TRUE) AS LiquidityCoverageRatio;   
         ''')
     et = time.time() - st
-    avg_query_time.append(et)
+    if i > 10:
+        avg_query_time.append(et)
 print(f'Liquidity Coverage Ratio : Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
 print(f'Liquidity Coverage Ratio : Max query execution time: {max(avg_query_time)}')
 print(f'Liquidity Coverage Ratio : Min query execution time: {min(avg_query_time)}')
 csvstore.append(["Liquidity Coverage Ratio", sum(avg_query_time)/len(avg_query_time), max(avg_query_time), min(avg_query_time)])
 
+#AGGREGATION - WINDOW FUNCTION
 avg_query_time = []
-for i in range(100):
+for i in range(110):
     st = time.time()
     result = client.command('''
         SELECT
@@ -148,14 +159,16 @@ for i in range(100):
         ) AS daily_data;
         ''')
     et = time.time() - st
-    avg_query_time.append(et)
+    if i > 10:
+        avg_query_time.append(et)
 print(f'Portfolio Metric Collections : Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
 print(f'Portfolio Metric Collections : Max query execution time: {max(avg_query_time)}')
 print(f'Portfolio Metric Collections : Min query execution time: {min(avg_query_time)}')
 csvstore.append(["Portfolio Metric Collections",sum(avg_query_time)/len(avg_query_time), max(avg_query_time), min(avg_query_time)])
 
+#JOIN
 avg_query_time = []
-for i in range(100):
+for i in range(110):
     st = time.time()
     result = client.command('''
         SELECT
@@ -175,15 +188,16 @@ for i in range(100):
         ) AS results;
     ''')
     et = time.time() - st
-    avg_query_time.append(et)
+    if i > 10:
+        avg_query_time.append(et)
 print(f'Tier1 Capital Ratio : Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
 print(f'Tier1 Capital Ratio : Max query execution time: {max(avg_query_time)}')
 print(f'Tier1 Capital Ratio : Min query execution time: {min(avg_query_time)}')
 csvstore.append(["Tier1 Capital Ratio", sum(avg_query_time)/len(avg_query_time), max(avg_query_time), min(avg_query_time)])
 
-
+#JOIN
 avg_query_time = []
-for i in range(100):
+for i in range(110):
     st = time.time()
     result = client.command('''
         WITH ranked_prices AS (
@@ -198,14 +212,16 @@ for i in range(100):
         GROUP BY a.asset_name, b.asset_name;
     ''')
     et = time.time() - st
-    avg_query_time.append(et)
+    if i > 10:
+        avg_query_time.append(et)
 print(f'Time series analysis : Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
 print(f'Time series analysis : Max query execution time: {max(avg_query_time)}')
 print(f'Time series analysis : Min query execution time: {min(avg_query_time)}')
 csvstore.append(["Time series analysis", sum(avg_query_time)/len(avg_query_time), max(avg_query_time), min(avg_query_time)])
 
+#AGGREGATION
 avg_query_time = []
-for i in range(100):
+for i in range(110):
     st = time.time()
     result = client.command('''
         SELECT transaction_category,
@@ -217,7 +233,8 @@ for i in range(100):
         ORDER BY confirmation_rate DESC;
     ''')
     et = time.time() - st
-    avg_query_time.append(et)
+    if i > 10:
+        avg_query_time.append(et)
 print(f'Transaction Confirmation Rate : Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
 print(f'Transaction Confirmation Rate : Max query execution time: {max(avg_query_time)}')
 print(f'Transaction Confirmation Rate : Min query execution time: {min(avg_query_time)}')

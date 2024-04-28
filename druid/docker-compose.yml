@@ -185,28 +185,28 @@ services:
       - router
     restart: unless-stopped
 
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    ports:
-      - 9090:9090
-    volumes:
-      - ./prometheus:/etc/prometheus
-      - prom_data:/prometheus
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #   ports:
+  #     - 9090:9090
+  #   volumes:
+  #     - ./prometheus:/etc/prometheus
+  #     - prom_data:/prometheus
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    restart: unless-stopped
-    environment:
-      - TERM=linux
-      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel
-    ports:
-      - '3000:3000'
-    volumes:
-      - 'grafana_storage:/var/lib/grafana'
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: grafana
+  #   restart: unless-stopped
+  #   environment:
+  #     - TERM=linux
+  #     - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel
+  #   ports:
+  #     - '3000:3000'
+  #   volumes:
+  #     - 'grafana_storage:/var/lib/grafana'
 
 
   kafka-zookeeper:

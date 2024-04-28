@@ -46,8 +46,8 @@ def publish_data(data, topic_name, time_interval):
     data_batches = split_into_batches(data, publish_batch)
     for batch in data_batches:
         push_to_kafka(batch, topic_name)
-        print("Sleeping for " + str(time_interval) + " seconds")
-        time.sleep(time_interval)
+        #print("Sleeping for " + str(time_interval) + " seconds")
+        #time.sleep(time_interval)
 
 def push_to_kafka(data, topic_name):
     producer = Producer({"bootstrap.servers": bootstrap_servers})
@@ -332,7 +332,6 @@ print(sys.argv)
 
 t1 = threading.Thread(target = generate_and_publish_asset_data, args = (0, int(sys.argv[3]), int(sys.argv[4])))
 t2 = threading.Thread(target = generate_and_publish_liabilities_data, args = (0, int(sys.argv[3]), int(sys.argv[4])))
-#t3 = threading.Thread(target = generate_and_publish_transactions_data, args = (0, int(sys.argv[7]), int(sys.argv[8])))
 
 counterparty_array = generate_counterparty_array()
 print("Pritning generated counterparty uuids array")
