@@ -6,3 +6,4 @@ temp
 temp-doris-setup-2/trial-all-in-one/be/resource/apache-doris-*
 temp-doris-setup-2/trial-all-in-one/fe/resource/apache-doris-*
 starrocks/assets/
+clickhouse-multinode-setup/clickhouse_scripts/values.csv
