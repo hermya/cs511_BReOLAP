@@ -57,6 +57,7 @@ services:
     volumes:
       - druid_shared:/opt/shared
       - coordinator_var:/opt/druid/var
+      - ./volumes/coordinator_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
     depends_on:
       - zookeeper
       - postgres
@@ -72,6 +73,7 @@ services:
     container_name: broker
     volumes:
       - broker_var:/opt/druid/var
+      - ./volumes/broker_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
     depends_on:
       - zookeeper
       - postgres
@@ -88,6 +90,7 @@ services:
     container_name: broker-2
     volumes:
       - broker_var:/opt/druid/var
+      - ./volumes/broker_2_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
     depends_on:
       - zookeeper
       - postgres
@@ -105,6 +108,7 @@ services:
     volumes:
       - druid_shared:/opt/shared
       - historical_var:/opt/druid/var
+      - ./volumes/historical_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
     depends_on: 
       - zookeeper
       - postgres
@@ -122,6 +126,7 @@ services:
     volumes:
       - druid_shared:/opt/shared
       - historical_var:/opt/druid/var
+      - ./volumes/historical_2_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
     depends_on: 
       - zookeeper
       - postgres
@@ -139,6 +144,7 @@ services:
     volumes:
       - druid_shared:/opt/shared
       - middle_var:/opt/druid/var
+      - ./volumes/middlemanager_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
     depends_on: 
       - zookeeper
       - postgres
@@ -156,6 +162,7 @@ services:
     container_name: router
     volumes:
       - router_var:/opt/druid/var
+      - ./volumes/router_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
     depends_on:
       - zookeeper
       - postgres
