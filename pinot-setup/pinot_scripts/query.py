@@ -173,16 +173,37 @@ avg_query_time = []
 for i in range(110):
     st = time.time()
     curs.execute('''
-        WITH ranked_prices AS (
-            SELECT asset_name, asset_market_value, value_timestamp,
-                ROW_NUMBER() OVER (PARTITION BY asset_name ORDER BY value_timestamp) AS rn
-            FROM asset
-            WHERE asset_name IN ('AAPL', 'GOOGL')
-        )
-        SELECT a.asset_name, b.asset_name, CORR(a.asset_market_value, b.asset_market_value) AS correlation
-        FROM ranked_prices a
-        JOIN ranked_prices b ON a.rn = b.rn
-        GROUP BY a.asset_name, b.asset_name;
+        SELECT 
+    a.asset_name AS asset_name_a, 
+    b.asset_name AS asset_name_b, 
+    (COUNT(*) * SUM(CAST(a.asset_market_value/10000 AS BIGINT) * CAST(b.asset_market_value/10000 AS BIGINT)) - SUM(CAST(a.asset_market_value/10000 AS BIGINT)) * SUM(CAST(b.asset_market_value/10000 AS BIGINT))) /
+    (SQRT((COUNT(*) * SUM(CAST(a.asset_market_value/10000 AS BIGINT) * CAST(a.asset_market_value/10000 AS BIGINT)) - SUM(CAST(a.asset_market_value/10000 AS BIGINT)) * SUM(CAST(a.asset_market_value/10000 AS BIGINT))) *
+          (COUNT(*) * SUM(CAST(b.asset_market_value/10000 AS BIGINT) * CAST(b.asset_market_value/10000 AS BIGINT)) - SUM(CAST(b.asset_market_value/10000 AS BIGINT)) * SUM(CAST(b.asset_market_value/10000 AS BIGINT)))))
+    AS correlation
+FROM 
+    (SELECT 
+       asset_name, asset_market_value, value_timestamp,
+    ROW_NUMBER() OVER w AS rn
+     FROM 
+         asset
+     WHERE 
+         asset_name IN ('AAPL', 'GOOGL')
+    GROUP BY "asset_name", value_timestamp , "asset_market_value"
+    WINDOW w AS (PARTITION BY asset_name ORDER BY value_timestamp ASC)
+    ) a
+JOIN 
+    (SELECT 
+        asset_name, asset_market_value, value_timestamp,
+    ROW_NUMBER() OVER w AS rn
+     FROM 
+         asset
+     WHERE 
+         asset_name IN ('AAPL', 'GOOGL')
+    GROUP BY "asset_name", value_timestamp, asset_market_value
+    WINDOW w AS (PARTITION BY asset_name ORDER BY value_timestamp  ASC)
+    ) b ON a.rn = b.rn AND a.asset_name <> b.asset_name
+GROUP BY 
+    a.asset_name, b.asset_name
     ''')
     et = time.time() - st
     if i > 10:
