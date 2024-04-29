@@ -1,156 +1,141 @@
-version: '3.8'
+version: "3"
 services:
-
-  clickhouse-01:
-    image: "clickhouse/clickhouse-server:${CHVER:-latest}"
-    user: "1001:1001"
-    container_name: clickhouse-01
-    hostname: clickhouse-01
-    volumes:
-      - ./fs/volumes/clickhouse-01/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
-      - ./fs/volumes/clickhouse-01/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
-      - ./fs/volumes/clickhouse-01/etc/clickhouse-server/config.d/monitoring.xml:/etc/clickhouse-server/config.d/monitoring.xml
-    ports:
-      - "8123:8123"
-      - "127.0.0.1:9000:9000"
-      - "127.0.0.1:9363:9363"
-    depends_on:
-      - clickhouse-keeper-01
-      - clickhouse-keeper-02
-      - clickhouse-keeper-03
-
-  clickhouse-02:
-    image: "clickhouse/clickhouse-server:${CHVER:-latest}"
-    user: "1001:1001"
-    container_name: clickhouse-02
-    hostname: clickhouse-02
-    volumes:
-      - ./fs/volumes/clickhouse-02/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
-      - ./fs/volumes/clickhouse-02/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
-    ports:
-      - "127.0.0.1:8124:8123"
-      - "127.0.0.1:9001:9000"
-    depends_on:
-      - clickhouse-keeper-01
-      - clickhouse-keeper-02
-      - clickhouse-keeper-03
-
-  clickhouse-03:
-    image: "clickhouse/clickhouse-server:${CHVER:-latest}"
-    user: "1001:1001"
-    container_name: clickhouse-03
-    hostname: clickhouse-03
-    volumes:
-      - ./fs/volumes/clickhouse-03/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
-      - ./fs/volumes/clickhouse-03/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
-    ports:
-      - "127.0.0.1:8125:8123"
-      - "127.0.0.1:9002:9000"
-    depends_on:
-      - clickhouse-keeper-01
-      - clickhouse-keeper-02
-      - clickhouse-keeper-03
-
-  clickhouse-04:
-    image: "clickhouse/clickhouse-server:${CHVER:-latest}"
-    user: "1001:1001"
-    container_name: clickhouse-04
-    hostname: clickhouse-04
-    volumes:
-      - ./fs/volumes/clickhouse-04/etc/clickhouse-server/config.d/config.xml:/etc/clickhouse-server/config.d/config.xml
-      - ./fs/volumes/clickhouse-04/etc/clickhouse-server/users.d/users.xml:/etc/clickhouse-server/users.d/users.xml
-    ports:
-      - "127.0.0.1:8126:8123"
-      - "127.0.0.1:9003:9000"
-    depends_on:
-      - clickhouse-keeper-01
-      - clickhouse-keeper-02
-      - clickhouse-keeper-03
-
-
-  clickhouse-keeper-01:
-    image: "clickhouse/clickhouse-keeper:${CHKVER:-latest-alpine}"
-    user: "1001:1001"
-    container_name: clickhouse-keeper-01
-    hostname: clickhouse-keeper-01
-    tty: true
-    volumes:
-     - ./fs/volumes/clickhouse-keeper-01/etc/clickhouse-keeper/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
-     - ./fs/volumes/clickhouse-keeper-01/log:/var/log
-     - ./fs/volumes/clickhouse-keeper-01/lib:/var/lib/clickhouse-keeper
-    ports:
-        - "127.0.0.1:9181:9181"
-
-  clickhouse-keeper-02:
-    image: "clickhouse/clickhouse-keeper:${CHKVER:-latest-alpine}"
-    user: "1001:1001"
-    container_name: clickhouse-keeper-02
-    hostname: clickhouse-keeper-02
-    tty: true
-    volumes:
-     - ./fs/volumes/clickhouse-keeper-02/etc/clickhouse-keeper/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
-     - ./fs/volumes/clickhouse-keeper-02/log:/var/log
-     - ./fs/volumes/clickhouse-keeper-02/lib:/var/lib/clickhouse-keeper    
-    ports:
-        - "127.0.0.1:9182:9181"
-
-  clickhouse-keeper-03:
-    image: "clickhouse/clickhouse-keeper:${CHKVER:-latest-alpine}"
-    user: "1001:1001"
-    container_name: clickhouse-keeper-03
-    hostname: clickhouse-keeper-03
-    tty: true
-    volumes:
-     - ./fs/volumes/clickhouse-keeper-03/etc/clickhouse-keeper/keeper_config.xml:/etc/clickhouse-keeper/keeper_config.xml
-     - ./fs/volumes/clickhouse-keeper-03/log:/var/log
-     - ./fs/volumes/clickhouse-keeper-03/lib:/var/lib/clickhouse-keeper    
-    ports:
-        - "127.0.0.1:9183:9181"
-
-
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
+  starrocks-fe:
+    image: starrocks/fe-ubuntu:2.5.4
+    hostname: starrocks-fe
+    container_name: starrocks-fe
+    user: root
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+      /opt/starrocks/fe/bin/start_fe.sh
     ports:
-      - 9090:9090
+      - 8030:8030
+      - 9020:9020
+      - 9030:9030
+    healthcheck:
+      test: 'mysql -uroot -h 172.11.0.2 -P 9030 -e "show frontends\G" |grep "Alive: true"'
+      interval: 10s
+      timeout: 5s
+      retries: 3
     volumes:
-      - ./fs/volumes/prometheus:/etc/prometheus
-      - prom_data:/prometheus
+#      - fe.conf:/opt/starrocks/fe/conf/fe.conf
+      - ./starrocks-vol/starrocks-fe/meta:/opt/starrocks/fe/meta
+      - ./starrocks-vol/starrocks-fe/log:/opt/starrocks/fe/log
+    networks:
+      network:
+        ipv4_address: 172.11.0.2
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    restart: unless-stopped
-    environment:
-      - TERM=linux
-      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel
+  starrocks-be-01:
+    image: starrocks/be-ubuntu:2.5.4
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 15s; mysql --connect-timeout 2 -h starrocks-fe -P9030 -uroot -e "alter system add backend \"starrocks-be-01:9050\";"
+        /opt/starrocks/be/bin/start_be.sh
     ports:
-      - '3000:3000'
+      - 8041:8040
+    hostname: starrocks-be-01
+    container_name: starrocks-be-01
+    user: root
+    depends_on:
+      - starrocks-fe
+    healthcheck:
+      test: 'mysql -uroot -h 172.11.0.2 -P 9030 -e "show backends\G" |grep "Alive: true"'
+      interval: 10s
+      timeout: 5s
+      retries: 3
     volumes:
-      - 'grafana_storage:/var/lib/grafana'
+#      - be.conf:/opt/starrocks/be/conf/be.conf
+      - ./starrocks-vol/starrocks-be-01/storage:/opt/starrocks/be/storage
+      - ./starrocks-vol/starrocks-be-01/log:/opt/starrocks/be/log
+    networks:
+      network:
+        ipv4_address: 172.11.0.3
 
+  starrocks-be-02:
+    image: starrocks/be-ubuntu:2.5.4
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 15s; mysql --connect-timeout 2 -h starrocks-fe -P9030 -uroot -e "alter system add backend \"starrocks-be-02:9050\";"
+        /opt/starrocks/be/bin/start_be.sh
+    ports:
+      - 8040:8040
+    hostname: starrocks-be-02
+    container_name: starrocks-be-02
+    user: root
+    depends_on:
+      - starrocks-fe
+    healthcheck:
+      test: 'mysql -uroot -h 172.11.0.2 -P 9030 -e "show backends\G" |grep "Alive: true"'
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+#      - be.conf:/opt/starrocks/be/conf/be.conf
+      - ./starrocks-vol/starrocks-be-02/storage:/opt/starrocks/be/storage
+      - ./starrocks-vol/starrocks-be-02/log:/opt/starrocks/be/log
+    networks:
+      network:
+        ipv4_address: 172.11.0.4
+
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #   ports:
+  #     - 9090:9090
+  #   volumes:
+  #     - ./prometheus:/etc/prometheus
+  #     - prom_data:/prometheus
+  #   networks:
+  #     network:
+  #       ipv4_address: 172.11.0.4
+
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: grafana
+  #   restart: unless-stopped
+  #   environment:
+  #     - TERM=linux
+  #     - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel
+  #   ports:
+  #     - '3000:3000'
+  #   volumes:
+  #     - 'grafana_storage:/var/lib/grafana'
+  #   networks:
+  #     network:
+  #       ipv4_address: 172.11.0.5
 
   zookeeper:
     image: confluentinc/cp-zookeeper:5.5.3
+    container_name: zookeeper
+    hostname: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      network:
+        ipv4_address: 172.11.0.6
 
   kafka:
     image: confluentinc/cp-enterprise-kafka:5.5.3
+    container_name: kafka
+    hostname: kafka
     depends_on:
       - zookeeper
     ports:
       - 29092:29092
-    container_name: kafka
-    hostname: kafka
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+    networks:
+      network:
+        ipv4_address: 172.11.0.7
 
   debezium:
     image: debezium/connect:1.4
@@ -163,12 +148,12 @@ services:
       VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
       CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
-      CONNECT_PLUGIN_PATH: /kafka/connect/
-    volumes:
-      - ./assets/clickhouse-kafka-connect-v1.0.15.jar:/kafka/connect/debezium-connector-clickhouse/clickhouse-kafka-connect-v1.0.15.jar
     depends_on: [kafka]
     ports:
       - 8087:8083
+    networks:
+      network:
+        ipv4_address: 172.11.0.8
 
   schema-registry:
     image: confluentinc/cp-schema-registry:5.5.3
@@ -179,6 +164,9 @@ services:
     ports:
       - 8085:8081
     depends_on: [zookeeper, kafka]
+    networks:
+      network:
+        ipv4_address: 172.11.0.9
     
   kafdrop:
     image: obsidiandynamics/kafdrop
@@ -189,6 +177,17 @@ services:
       KAFKA_BROKERCONNECT: "kafka:9092"
     depends_on:
       - "kafka"
+    networks:
+      network:
+        ipv4_address: 172.11.0.10
+
+networks:
+  network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.11.0.0/16
+          gateway: 172.11.0.1
 
 volumes:
   grafana_storage: {}
