@@ -1,22 +1,26 @@
-from pinotdb import connect
+from sqlalchemy import create_engine
+from sqlalchemy.schema import Table, MetaData, Column
+from sqlalchemy.sql.expression import select, text
 import time
 
-conn = connect(host='localhost', port=8099, path='/query', scheme='http')
-curs = conn.cursor()
+engine = create_engine('starrocks://kafka:12345@192.168.0.111:9030/BReOLAP')
+curs = engine.connect()
 
+
+# Execute a SQL query
 csvstore = []
 
 avg_query_time = []
 for i in range(110):
     st = time.time()
-    curs.execute('''
-    SELECT asset.asset_name, asset.asset_class, counterparties.counterparty_name, SUM(transactions.transaction_amount)
-        FROM transactions
-        JOIN counterparties ON transactions.counterparty_uuid = counterparties.counterparty_uuid
-        JOIN asset ON transactions.asset_linked = asset.asset_uuid
-        WHERE transactions.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
-        GROUP BY asset.asset_name, asset.asset_class, counterparties.counterparty_name
-    ''')
+    curs.execute(text('''
+    SELECT a.asset_name, a.asset_class, c.counterparty_name, SUM(t.transaction_amount)
+        FROM transactions_topic t
+        JOIN counterparties_topic c ON t.counterparty_uuid = c.counterparty_uuid
+        JOIN asset_topic a ON t.asset_linked = a.asset_uuid
+        WHERE t.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
+        GROUP BY a.asset_name, a.asset_class, c.counterparty_name
+    '''))
     et = time.time() - st
     if i > 10:
         avg_query_time.append(et)
@@ -28,7 +32,7 @@ csvstore.append(["Alpha Generation",sum(avg_query_time)/len(avg_query_time), max
 avg_query_time = []
 for i in range(110):
     st = time.time()
-    curs.execute('''
+    curs.execute(text('''
         SELECT
             SumCapital / TotalRiskAdjustedValue AS CalculatedValue
         FROM (
@@ -38,13 +42,13 @@ for i in range(110):
                     THEN asset_market_value * asset_quantity
                     ELSE 0
                 END) AS SumCapital,
-                SUM(asset.asset_market_value * asset.asset_quantity * asset_risk.risk_rating) AS TotalRiskAdjustedValue
+                SUM(a.asset_market_value * a.asset_quantity * r.risk_rating) AS TotalRiskAdjustedValue
             FROM
-                asset
+                asset_topic a
             LEFT JOIN
-                asset_risk ON asset.asset_uuid = asset_risk.asset_uuid
+                risk_topic r ON a.asset_uuid = r.asset_uuid
         ) AS results;
-    ''')
+    '''))
     et = time.time() - st
     if i > 10:
         avg_query_time.append(et)
@@ -57,14 +61,14 @@ csvstore.append(["Capital Adequacy Ratio", sum(avg_query_time)/len(avg_query_tim
 avg_query_time = []
 for i in range(110):
     st = time.time()
-    curs.execute('''
+    curs.execute(text('''
         SELECT counterparty_uuid,
         COUNT(*) AS transaction_count
-        FROM transactions
+        FROM transactions_topic
         GROUP BY counterparty_uuid
         ORDER BY transaction_count DESC
         LIMIT 10;
-    ''')
+    '''))
     et = time.time() - st
     if i > 10:
         avg_query_time.append(et)
@@ -77,13 +81,13 @@ csvstore.append(["Counterparty Transaction Volumne Analysis", sum(avg_query_time
 avg_query_time = []
 for i in range(110):
     st = time.time()
-    curs.execute('''
+    curs.execute(text('''
         SELECT
             SUM(asset_market_value * asset_quantity) /
-            (SELECT SUM(liability_amount) FROM liabilities) AS Ratio
-        FROM asset
+            (SELECT SUM(liability_amount) FROM liabilities_topic) AS Ratio
+        FROM asset_topic
         WHERE asset_class IN ('Stocks', 'Gold Bonds');
-    ''')
+    '''))
     et = time.time() - st
     if i > 10:
         avg_query_time.append(et)
@@ -95,17 +99,21 @@ csvstore.append(["Leverage Ratio", sum(avg_query_time)/len(avg_query_time), max(
 avg_query_time = []
 for i in range(110):
     st = time.time()
-    curs.execute('''
+    curs.execute(text('''
         SELECT
-        (SELECT SUM(asset_market_value * asset_quantity)
-        FROM asset
-        WHERE asset_class IN ('Stocks', 'Gold Bonds','Cash')) /
-        (SELECT SUM(transaction_amount)
-        FROM transactions
-        WHERE ToDateTime(transaction_due_date*1000, 'yyyy-MM-dd') BETWEEN ToDateTime(now(), 'yyyy-MM-dd') AND ToDateTime(date_add('DAY', 30, now()),'yyyy-MM-dd')
-        AND transaction_type IN ('Payment', 'Withdrawal', 'LoanRepayment')
-        AND transaction_confirmed = 1) AS LiquidityCoverageRatio;    
-        ''')
+        (
+            SELECT SUM(asset_market_value * asset_quantity)
+            FROM asset_topic
+            WHERE asset_class IN ('Stocks', 'Gold Bonds', 'Cash')
+        ) /
+        (
+            SELECT SUM(transaction_amount)
+            FROM transactions_topic
+            WHERE FROM_UNIXTIME(transaction_due_date) BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+            AND transaction_type IN ('Payment', 'Withdrawal', 'LoanRepayment')
+            AND transaction_confirmed = TRUE
+        ) AS LiquidityCoverageRatio;
+        '''))
     et = time.time() - st
     if i > 10:
         avg_query_time.append(et)
@@ -117,7 +125,7 @@ csvstore.append(["Liquidity Coverage Ratio", sum(avg_query_time)/len(avg_query_t
 avg_query_time = []
 for i in range(110):
     st = time.time()
-    curs.execute('''
+    curs.execute(text('''
         SELECT
             SUM(asset_market_value_today) AS TotalPortfolioValue,
             AVG(daily_profit_loss) AS AverageDailyIncrease,
@@ -125,13 +133,13 @@ for i in range(110):
             MIN(daily_profit_loss) AS MinDailyAddition
         FROM (
             SELECT
-                ToDateTime(value_timestamp, 'yyyy-MM-dd') AS val_date,
+                FROM_UNIXTIME(value_timestamp) AS val_date,
                 SUM(asset_market_value) AS asset_market_value_today,
-                (SUM(asset_market_value - asset_cost)) AS daily_profit_loss
-            FROM asset
-            GROUP BY ToDateTime(value_timestamp, 'yyyy-MM-dd')
+                SUM(asset_market_value - asset_cost) - LAG(SUM(asset_market_value - asset_cost), 1, 0) OVER (ORDER BY FROM_UNIXTIME(value_timestamp)) AS daily_profit_loss
+            FROM asset_topic
+            GROUP BY FROM_UNIXTIME(value_timestamp)
         ) AS daily_data;
-        ''')
+        '''))
     et = time.time() - st
     if i > 10:
         avg_query_time.append(et)
@@ -143,7 +151,7 @@ csvstore.append(["Portfolio Metric Collections",sum(avg_query_time)/len(avg_quer
 avg_query_time = []
 for i in range(110):
     st = time.time()
-    curs.execute('''
+    curs.execute(text('''
         SELECT
             SumCapital / TotalRiskAdjustedValue AS CalculatedValue
         FROM (
@@ -153,13 +161,13 @@ for i in range(110):
                     THEN asset_market_value * asset_quantity
                     ELSE 0
                 END) AS SumCapital,
-                SUM(asset.asset_market_value * asset.asset_quantity * asset_risk.risk_rating) AS TotalRiskAdjustedValue
+                SUM(a.asset_market_value * a.asset_quantity * r.risk_rating) AS TotalRiskAdjustedValue
             FROM
-                asset 
+                asset_topic a
             LEFT JOIN
-                asset_risk ON asset.asset_uuid = asset_risk.asset_uuid
+                risk_topic r ON a.asset_uuid = r.asset_uuid
         ) AS results;
-    ''')
+    '''))
     et = time.time() - st
     if i > 10:
         avg_query_time.append(et)
@@ -172,39 +180,29 @@ csvstore.append(["Tier1 Capital Ratio", sum(avg_query_time)/len(avg_query_time),
 avg_query_time = []
 for i in range(110):
     st = time.time()
-    curs.execute('''
+    curs.execute(text('''
+    WITH ranked_prices AS (
         SELECT 
-    a.asset_name AS asset_name_a, 
-    b.asset_name AS asset_name_b, 
-    (COUNT(*) * SUM(CAST(a.asset_market_value/10000 AS BIGINT) * CAST(b.asset_market_value/10000 AS BIGINT)) - SUM(CAST(a.asset_market_value/10000 AS BIGINT)) * SUM(CAST(b.asset_market_value/10000 AS BIGINT))) /
-    (SQRT((COUNT(*) * SUM(CAST(a.asset_market_value/10000 AS BIGINT) * CAST(a.asset_market_value/10000 AS BIGINT)) - SUM(CAST(a.asset_market_value/10000 AS BIGINT)) * SUM(CAST(a.asset_market_value/10000 AS BIGINT))) *
-          (COUNT(*) * SUM(CAST(b.asset_market_value/10000 AS BIGINT) * CAST(b.asset_market_value/10000 AS BIGINT)) - SUM(CAST(b.asset_market_value/10000 AS BIGINT)) * SUM(CAST(b.asset_market_value/10000 AS BIGINT)))))
-    AS correlation
-FROM 
-    (SELECT 
-       asset_name, asset_market_value, value_timestamp,
-    ROW_NUMBER() OVER w AS rn
-     FROM 
-         asset
-     WHERE 
-         asset_name IN ('AAPL', 'GOOGL')
-    GROUP BY "asset_name", value_timestamp , "asset_market_value"
-    WINDOW w AS (PARTITION BY asset_name ORDER BY value_timestamp ASC)
-    ) a
-JOIN 
-    (SELECT 
-        asset_name, asset_market_value, value_timestamp,
-    ROW_NUMBER() OVER w AS rn
-     FROM 
-         asset
-     WHERE 
-         asset_name IN ('AAPL', 'GOOGL')
-    GROUP BY "asset_name", value_timestamp, asset_market_value
-    WINDOW w AS (PARTITION BY asset_name ORDER BY value_timestamp  ASC)
-    ) b ON a.rn = b.rn AND a.asset_name <> b.asset_name
-GROUP BY 
-    a.asset_name, b.asset_name
-    ''')
+            asset_name, 
+            asset_market_value, 
+            value_timestamp,
+            ROW_NUMBER() OVER (PARTITION BY asset_name ORDER BY value_timestamp) AS rn
+        FROM asset_topic
+        WHERE asset_name IN ('AAPL', 'GOOGL')
+    )
+    SELECT 
+        a.asset_name AS asset_name_a, 
+        b.asset_name AS asset_name_b, 
+        (
+            COUNT(*) * SUM(a.asset_market_value * b.asset_market_value) - SUM(a.asset_market_value) * SUM(b.asset_market_value)
+        ) / (
+            SQRT(COUNT(*) * SUM(a.asset_market_value * a.asset_market_value) - SUM(a.asset_market_value) * SUM(a.asset_market_value)) *
+            SQRT(COUNT(*) * SUM(b.asset_market_value * b.asset_market_value) - SUM(b.asset_market_value) * SUM(b.asset_market_value))
+        ) AS correlation
+    FROM ranked_prices a
+    JOIN ranked_prices b ON a.rn = b.rn AND a.asset_name != b.asset_name
+    GROUP BY a.asset_name, b.asset_name;
+    '''))
     et = time.time() - st
     if i > 10:
         avg_query_time.append(et)
@@ -216,15 +214,15 @@ csvstore.append(["Time series analysis", sum(avg_query_time)/len(avg_query_time)
 avg_query_time = []
 for i in range(110):
     st = time.time()
-    curs.execute('''
+    curs.execute(text('''
         SELECT transaction_category,
         SUM(CASE WHEN transaction_confirmed = 1 THEN 1 ELSE 0 END) AS confirmed_count,
         COUNT(*) AS total_count,
         SUM(CASE WHEN transaction_confirmed = 1 THEN 1 ELSE 0 END) / COUNT(*) AS confirmation_rate
-        FROM transactions
+        FROM transactions_topic
         GROUP BY transaction_category
         ORDER BY confirmation_rate DESC;
-    ''')
+    '''))
     et = time.time() - st
     if i > 10:
         avg_query_time.append(et)
@@ -238,8 +236,3 @@ with open("values.csv","w") as file:
     for row in csvstore:
         row = [str(x) for x in row]
         file.write(",".join(row) + "\n")
-
-
-# Close the connection
-
-conn.close()

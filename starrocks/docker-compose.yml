@@ -151,6 +151,8 @@ services:
     depends_on: [kafka]
     ports:
       - 8087:8083
+    volumes:
+      - ./assets/starrocks-kafka-connector-1.0.3:/kafka/connect/starrocks-kafka-connector/
     networks:
       network:
         ipv4_address: 172.11.0.8
