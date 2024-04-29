@@ -21,8 +21,14 @@ version: "2.2"
 volumes:
   metadata_data: {}
   middle_var: {}
+  middle_var_2: {}
+  middle_var_3: {}
   historical_var: {}
   broker_var: {}
+  historical_var_2: {}
+  historical_var_3: {}
+  historical_var_4: {}
+  broker_var_2: {}
   coordinator_var: {}
   router_var: {}
   druid_shared: {}
@@ -89,14 +95,14 @@ services:
     image: apache/druid:29.0.0
     container_name: broker-2
     volumes:
-      - broker_var:/opt/druid/var
+      - broker_var_2:/opt/druid/var
       - ./volumes/broker_2_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
     depends_on:
       - zookeeper
       - postgres
       - coordinator
     ports:
-      - "8087:8087"
+      - "8084:8082"
     command:
       - broker
     env_file:
@@ -106,7 +112,7 @@ services:
     image: apache/druid:29.0.0
     container_name: historical
     volumes:
-      - druid_shared:/opt/shared
+      # - #druid_shared:/opt/shared
       - historical_var:/opt/druid/var
       - ./volumes/historical_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
     depends_on: 
@@ -118,31 +124,65 @@ services:
     command:
       - historical
     env_file:
-      - environment
+      - environment      
 
   historical-2:
     image: apache/druid:29.0.0
     container_name: historical-2
     volumes:
-      - druid_shared:/opt/shared
-      - historical_var:/opt/druid/var
+      # - #druid_shared:/opt/shared
+      - historical_var_2:/opt/druid/var
       - ./volumes/historical_2_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
     depends_on: 
       - zookeeper
       - postgres
       - coordinator
     ports:
-      - "8086:8086"
+      - "8086:8083"
     command:
       - historical
     env_file:
       - environment
-  
+
+  historical-3:
+    image: apache/druid:29.0.0
+    container_name: historical-3
+    volumes:
+      # - #druid_shared:/opt/shared
+      - historical_var_3:/opt/druid/var
+    depends_on: 
+      - zookeeper
+      - postgres
+      - coordinator
+    ports:
+      - "8088:8083"
+    command:
+      - historical
+    env_file:
+      - environment
+
+  historical-4:
+    image: apache/druid:29.0.0
+    container_name: historical-4
+    volumes:
+      # - #druid_shared:/opt/shared
+      - historical_var_4:/opt/druid/var
+    depends_on: 
+      - zookeeper
+      - postgres
+      - coordinator
+    ports:
+      - "8089:8083"
+    command:
+      - historical
+    env_file:
+      - environment
+    
   middlemanager:
     image: apache/druid:29.0.0
     container_name: middlemanager
     volumes:
-      - druid_shared:/opt/shared
+      # - druid_shared:/opt/shared
       - middle_var:/opt/druid/var
       - ./volumes/middlemanager_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
     depends_on: 
@@ -152,6 +192,44 @@ services:
     ports:
       - "8091:8091"
       - "8100-8105:8100-8105"
+    command:
+      - middleManager
+    env_file:
+      - environment
+
+  middlemanager-2:
+    image: apache/druid:29.0.0
+    container_name: middlemanager-2
+    volumes:
+      # - druid_shared:/opt/shared
+      - middle_var_2:/opt/druid/var
+      - ./volumes/middlemanager_2_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
+    depends_on: 
+      - zookeeper
+      - postgres
+      - coordinator
+    ports:
+      - "8191:8091"
+      - "8200-8205:8100-8105"
+    command:
+      - middleManager
+    env_file:
+      - environment
+
+  middlemanager-3:
+    image: apache/druid:29.0.0
+    container_name: middlemanager-3
+    volumes:
+      # - druid_shared:/opt/shared
+      - middle_var_3:/opt/druid/var
+      - ./volumes/middlemanager_3_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
+    depends_on: 
+      - zookeeper
+      - postgres
+      - coordinator
+    ports:
+      - "8291:8091"
+      - "8300-8305:8100-8105"
     command:
       - middleManager
     env_file:
