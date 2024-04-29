@@ -24,31 +24,57 @@ services:
       - pinot-zookeeper
     
 
-  pinot-broker:
+  pinot-broker-1:
     image: apachepinot/pinot:1.1.0
     command: "StartBroker -zkAddress pinot-zookeeper:2181"
     restart: unless-stopped
-    container_name: "pinot-broker"
+    container_name: "pinot-broker-1"
     ports:
       - "8099:8099"
-      - "8888"
+      - "9888:8888"
     environment:
-      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/broker.yml"
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/broker.yml"
     depends_on:
       - pinot-controller
 
-  pinot-server:
+  pinot-server-1:
     image: apachepinot/pinot:1.1.0
     command: "StartServer -zkAddress pinot-zookeeper:2181"
     restart: unless-stopped
-    container_name: "pinot-server"
+    container_name: "pinot-server-1"
     ports:
       - "8098:8098"
-      - "8888"
+      - "9889:8888"
     environment:
-      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-server.log -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/server.yml"
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-server.log -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/server.yml"
     depends_on:
-      - pinot-broker
+      - pinot-broker-1
+
+  pinot-broker-2:
+    image: apachepinot/pinot:1.1.0
+    command: "StartBroker -zkAddress pinot-zookeeper:2181"
+    restart: unless-stopped
+    container_name: "pinot-broker-2"
+    ports:
+      - "8101:8099"
+      - "9988:8888"
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/broker.yml"
+    depends_on:
+      - pinot-controller
+
+  pinot-server-2:
+    image: apachepinot/pinot:1.1.0
+    command: "StartServer -zkAddress pinot-zookeeper:2181"
+    restart: unless-stopped
+    container_name: "pinot-server-2"
+    ports:
+      - "8100:8098"
+      - "9989:8888"
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx1G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-server.log -javaagent:/opt/pinot/etc/jmx_prometheus_javaagent/jmx_prometheus_javaagent.jar=8888:/opt/pinot/etc/jmx_prometheus_javaagent/configs/server.yml"
+    depends_on:
+      - pinot-broker-2
 
   # prometheus:
   #   image: prom/prometheus
