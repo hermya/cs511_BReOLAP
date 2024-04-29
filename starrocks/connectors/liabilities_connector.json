@@ -8,10 +8,10 @@
     "key.converter.schemas.enable": "true",
     "value.converter.schemas.enable": "false",
     "starrocks.http.url": "172.11.0.2:8030",
-    "starrocks.topic2table.map": "liabilities_topic:liabilities",
+    "starrocks.topic2table.map": "liabilities_topic:liabilities_topic",
     "starrocks.username": "kafka",
     "starrocks.password": "12345",
-    "starrocks.database.name": "BREOLAP",
+    "starrocks.database.name": "BReOLAP",
     "sink.properties.strip_outer_array": "true"
   }
 }
