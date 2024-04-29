@@ -24,23 +24,6 @@ CREATE TABLE asset_topic (
 	DISTRIBUTED BY HASH (asset_uuid) 
 	BUCKETS 1 PROPERTIES ("replication_num" = "1",     "in_memory"="false",     "storage_format"="DEFAULT");
 
-CREATE TABLE asset (     
-    `asset_id` int,
-	`asset_uuid` varchar(100),
-	`asset_class` varchar(100),
-	`asset_name` varchar(100),
-	`asset_cost` DECIMAL(20, 2),
-	`asset_market_value` DECIMAL(20, 2),
-	`asset_quantity` int,
-	`liquidity_rating` varchar(100),
-	`asset_owner` varchar(100),
-	`portfolio_manager` varchar(100),
-	`value_timestamp` DECIMAL(15, 2)
-) 	ENGINE=OLAP 
-	DISTRIBUTED BY HASH (asset_uuid) 
-	BUCKETS 1 PROPERTIES ("replication_num" = "1",     "in_memory"="false",     "storage_format"="DEFAULT");
-
-
 CREATE TABLE counterparties_topic
 (
     `counterparty_id` int,
