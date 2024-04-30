@@ -22,7 +22,6 @@ volumes:
   metadata_data: {}
   middle_var: {}
   middle_var_2: {}
-  middle_var_3: {}
   historical_var: {}
   broker_var: {}
   historical_var_2: {}
@@ -86,23 +85,6 @@ services:
       - coordinator
     ports:
       - "8082:8082"
-    command:
-      - broker
-    env_file:
-      - environment
-
-  broker-2:
-    image: apache/druid:29.0.0
-    container_name: broker-2
-    volumes:
-      - broker_var_2:/opt/druid/var
-      - ./volumes/broker_2_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
-    depends_on:
-      - zookeeper
-      - postgres
-      - coordinator
-    ports:
-      - "8084:8082"
     command:
       - broker
     env_file:
@@ -216,25 +198,6 @@ services:
     env_file:
       - environment
 
-  middlemanager-3:
-    image: apache/druid:29.0.0
-    container_name: middlemanager-3
-    volumes:
-      # - druid_shared:/opt/shared
-      - middle_var_3:/opt/druid/var
-      - ./volumes/middlemanager_3_common/common.runtime.properties:/opt/druid/conf/druid/cluster/_common/common.runtime.properties
-    depends_on: 
-      - zookeeper
-      - postgres
-      - coordinator
-    ports:
-      - "8291:8091"
-      - "8300-8305:8100-8105"
-    command:
-      - middleManager
-    env_file:
-      - environment
-
   router:
     image: apache/druid:29.0.0
     container_name: router
@@ -263,28 +226,28 @@ services:
       - router
     restart: unless-stopped
 
-  # prometheus:
-  #   image: prom/prometheus
-  #   container_name: prometheus
-  #   command:
-  #     - '--config.file=/etc/prometheus/prometheus.yml'
-  #   ports:
-  #     - 9090:9090
-  #   volumes:
-  #     - ./prometheus:/etc/prometheus
-  #     - prom_data:/prometheus
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom_data:/prometheus
 
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   container_name: grafana
-  #   restart: unless-stopped
-  #   environment:
-  #     - TERM=linux
-  #     - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel
-  #   ports:
-  #     - '3000:3000'
-  #   volumes:
-  #     - 'grafana_storage:/var/lib/grafana'
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      - TERM=linux
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel
+    ports:
+      - '3000:3000'
+    volumes:
+      - 'grafana_storage:/var/lib/grafana'
 
 
   kafka-zookeeper:

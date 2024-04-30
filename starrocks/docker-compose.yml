@@ -17,7 +17,6 @@ services:
       timeout: 5s
       retries: 3
     volumes:
-#      - fe.conf:/opt/starrocks/fe/conf/fe.conf
       - ./starrocks-vol/starrocks-fe/meta:/opt/starrocks/fe/meta
       - ./starrocks-vol/starrocks-fe/log:/opt/starrocks/fe/log
     networks:
@@ -45,7 +44,6 @@ services:
       timeout: 5s
       retries: 3
     volumes:
-#      - be.conf:/opt/starrocks/be/conf/be.conf
       - ./starrocks-vol/starrocks-be-01/storage:/opt/starrocks/be/storage
       - ./starrocks-vol/starrocks-be-01/log:/opt/starrocks/be/log
     networks:
@@ -73,41 +71,40 @@ services:
       timeout: 5s
       retries: 3
     volumes:
-#      - be.conf:/opt/starrocks/be/conf/be.conf
       - ./starrocks-vol/starrocks-be-02/storage:/opt/starrocks/be/storage
       - ./starrocks-vol/starrocks-be-02/log:/opt/starrocks/be/log
     networks:
       network:
         ipv4_address: 172.11.0.4
 
-  # prometheus:
-  #   image: prom/prometheus
-  #   container_name: prometheus
-  #   command:
-  #     - '--config.file=/etc/prometheus/prometheus.yml'
-  #   ports:
-  #     - 9090:9090
-  #   volumes:
-  #     - ./prometheus:/etc/prometheus
-  #     - prom_data:/prometheus
-  #   networks:
-  #     network:
-  #       ipv4_address: 172.11.0.4
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom_data:/prometheus
+    networks:
+      network:
+        ipv4_address: 172.11.0.4
 
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   container_name: grafana
-  #   restart: unless-stopped
-  #   environment:
-  #     - TERM=linux
-  #     - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel
-  #   ports:
-  #     - '3000:3000'
-  #   volumes:
-  #     - 'grafana_storage:/var/lib/grafana'
-  #   networks:
-  #     network:
-  #       ipv4_address: 172.11.0.5
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      - TERM=linux
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-polystat-panel
+    ports:
+      - '3000:3000'
+    volumes:
+      - 'grafana_storage:/var/lib/grafana'
+    networks:
+      network:
+        ipv4_address: 172.11.0.5
 
   zookeeper:
     image: confluentinc/cp-zookeeper:5.5.3
