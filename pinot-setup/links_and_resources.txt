@@ -21,3 +21,17 @@ $> export JAVA_OPTS_TEMP=${JAVA_OPTS}
 $> export JAVA_OPTS=
 This will essentially help us avoid the stated issue.
 5) Similar to the other setups, we can use grafana to view the metrics, using following graph confs like "pinot_broker_realtimeTotalCPUTimeNS*"
+
+
+On Swagger UI page (http://localhost:9000/help),
+1) Use the following API to add a new schema	:	http://localhost:9000/help#/Schema/addSchema_1
+2) Use the following API to add a new table 	: 	http://localhost:9000/help#/Table/addTable
+
+THEN
+3) List all schemas using	:	http://localhost:9000/help#/Schema/listSchemaNames
+4) List all tables using	:	http://localhost:9000/help#/Table/listTables
+
+THEN
+5) To check the size of particular database	:	http://localhost:9000/help#/Table/getTableSize
+
+python data_generation.py 80000 160000 6400000 1 0
