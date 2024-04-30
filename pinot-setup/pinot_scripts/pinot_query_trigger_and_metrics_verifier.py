@@ -10,7 +10,8 @@ avg_query_time = []
 for i in range(110):
     st = time.time()
     curs.execute('''
-    SET maxRowsInJoin = 40000000;                
+    SET maxRowsInJoin = 40000000;    
+    SET timeoutMs = 40000000;                          
     SELECT asset.asset_name, asset.asset_class, counterparties.counterparty_name, SUM(transactions.transaction_amount)
         FROM transactions
         JOIN counterparties ON transactions.counterparty_uuid = counterparties.counterparty_uuid
@@ -30,7 +31,8 @@ avg_query_time = []
 for i in range(110):
     st = time.time()
     curs.execute('''
-        SET maxRowsInJoin = 40000000;          
+        SET maxRowsInJoin = 40000000;
+        SET timeoutMs = 40000000;                   
         SELECT
             SumCapital / TotalRiskAdjustedValue AS CalculatedValue
         FROM (
@@ -60,6 +62,7 @@ avg_query_time = []
 for i in range(110):
     st = time.time()
     curs.execute('''
+        SET timeoutMs = 40000000;         
         SELECT counterparty_uuid,
         COUNT(*) AS transaction_count
         FROM transactions
@@ -80,6 +83,7 @@ avg_query_time = []
 for i in range(110):
     st = time.time()
     curs.execute('''
+        SET timeoutMs = 40000000;         
         SELECT
             SUM(asset_market_value * asset_quantity) /
             (SELECT SUM(liability_amount) FROM liabilities) AS Ratio
@@ -98,6 +102,7 @@ avg_query_time = []
 for i in range(110):
     st = time.time()
     curs.execute('''
+        SET timeoutMs = 40000000;         
         SELECT
         (SELECT SUM(asset_market_value * asset_quantity)
         FROM asset
@@ -120,6 +125,7 @@ avg_query_time = []
 for i in range(110):
     st = time.time()
     curs.execute('''
+        SET timeoutMs = 40000000;         
         SELECT
             SUM(asset_market_value_today) AS TotalPortfolioValue,
             AVG(daily_profit_loss) AS AverageDailyIncrease,
@@ -146,7 +152,8 @@ avg_query_time = []
 for i in range(110):
     st = time.time()
     curs.execute('''
-        SET maxRowsInJoin = 40000000;          
+        SET maxRowsInJoin = 40000000;
+        SET timeoutMs = 40000000;                   
         SELECT
             SumCapital / TotalRiskAdjustedValue AS CalculatedValue
         FROM (
@@ -176,7 +183,8 @@ avg_query_time = []
 for i in range(110):
     st = time.time()
     curs.execute('''
-        SET maxRowsInJoin = 40000000;          
+        SET maxRowsInJoin = 40000000;
+        SET timeoutMs = 40000000;                   
         SELECT 
     a.asset_name AS asset_name_a, 
     b.asset_name AS asset_name_b, 
@@ -221,6 +229,7 @@ avg_query_time = []
 for i in range(110):
     st = time.time()
     curs.execute('''
+        SET timeoutMs = 40000000;         
         SELECT transaction_category,
         SUM(CASE WHEN transaction_confirmed = 1 THEN 1 ELSE 0 END) AS confirmed_count,
         COUNT(*) AS total_count,

@@ -13,24 +13,24 @@ conn = connect(host='localhost', port=8888, path='/druid/v2/sql/', context=query
 curs = conn.cursor()
 csvstore = []
 
-avg_query_time = []
-for i in range(110):
-    st = time.time()
-    curs.execute('''
-    SELECT assets.asset_name, assets.asset_class, counterparties_topic.counterparty_uuid, SUM(transactions.transaction_amount)
-        FROM transactions
-        JOIN counterparties_topic ON transactions.counterparty_uuid = counterparties_topic.counterparty_uuid
-        JOIN assets ON transactions.asset_linked = assets.asset_uuid
-        WHERE transactions.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
-        GROUP BY assets.asset_name, assets.asset_class, counterparties_topic.counterparty_uuid
-    ''')
-    et = time.time() - st
-    if i > 10:
-        avg_query_time.append(et)
-print(f'Alpha Generation: Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
-print(f'Alpha Generation: Max query execution time: {max(avg_query_time)}')
-print(f'Alpha Generation: Min query execution time: {min(avg_query_time)}')
-csvstore.append(["Alpha Generation",sum(avg_query_time)/len(avg_query_time), max(avg_query_time), min(avg_query_time)])
+# avg_query_time = []
+# for i in range(110):
+#     st = time.time()
+#     curs.execute('''
+#     SELECT assets.asset_name, assets.asset_class, counterparties_topic.counterparty_uuid, SUM(transactions.transaction_amount)
+#         FROM transactions
+#         JOIN counterparties_topic ON transactions.counterparty_uuid = counterparties_topic.counterparty_uuid
+#         JOIN assets ON transactions.asset_linked = assets.asset_uuid
+#         WHERE transactions.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
+#         GROUP BY assets.asset_name, assets.asset_class, counterparties_topic.counterparty_uuid
+#     ''')
+#     et = time.time() - st
+#     if i > 10:
+#         avg_query_time.append(et)
+# print(f'Alpha Generation: Avg query execution time : {sum(avg_query_time)/len(avg_query_time)}')
+# print(f'Alpha Generation: Max query execution time: {max(avg_query_time)}')
+# print(f'Alpha Generation: Min query execution time: {min(avg_query_time)}')
+# csvstore.append(["Alpha Generation",sum(avg_query_time)/len(avg_query_time), max(avg_query_time), min(avg_query_time)])
 
 avg_query_time = []
 for i in range(110):
