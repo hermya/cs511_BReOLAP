@@ -12,6 +12,8 @@ bootstrap_servers = "192.168.0.111:29092"
 #bootstrap_servers = "localhost:29092"
 publish_batch = int(sys.argv[1])
 generation_batch = int(sys.argv[2])
+data_until = {}
+producer = Producer({"bootstrap.servers": bootstrap_servers, 'request.timeout.ms': 120000, 'linger.ms': 100})
 
 #Credits to Alexandra Zaharia dev blog - https://alexandra-zaharia.github.io/
 #Extending python thread class to allow the python thread to return a value
@@ -50,7 +52,11 @@ def publish_data(data, topic_name, time_interval):
         #time.sleep(time_interval)
 
 def push_to_kafka(data, topic_name):
-    producer = Producer({"bootstrap.servers": bootstrap_servers})
+    global data_until
+    global producer
+    #producer = Producer({"bootstrap.servers": bootstrap_servers, 'request.timeout.ms': 120000})
+    if (topic_name not in data_until) :
+        data_until[topic_name] = 0 
     try:
         for message in data:
             producer.produce(topic_name, json.dumps(message).encode("utf-8"))
@@ -58,7 +64,8 @@ def push_to_kafka(data, topic_name):
         producer.flush()
     except Exception as exc:
         print("Exception caught " + str(exc))
-    print("Completed publishing " + str(len(data)) + " records onto topic: " + topic_name)
+    data_until[topic_name] += len(data)
+    print("Completed publishing " + str(data_until[topic_name]) + " records onto topic: " + topic_name)
     
 def random_date(start_date, end_date):
     delta = end_date - start_date
@@ -335,7 +342,7 @@ t2 = threading.Thread(target = generate_and_publish_liabilities_data, args = (0,
 
 counterparty_array = generate_counterparty_array()
 print("Pritning generated counterparty uuids array")
-#print(counterparty_array)
+print(counterparty_array)
 
 publish_counterparty_data = int(sys.argv[5])
 
