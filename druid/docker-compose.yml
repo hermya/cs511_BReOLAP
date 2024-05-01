@@ -126,39 +126,39 @@ services:
     env_file:
       - environment
 
-  historical-3:
-    image: apache/druid:29.0.0
-    container_name: historical-3
-    volumes:
-      # - #druid_shared:/opt/shared
-      - historical_var_3:/opt/druid/var
-    depends_on: 
-      - zookeeper
-      - postgres
-      - coordinator
-    ports:
-      - "8088:8083"
-    command:
-      - historical
-    env_file:
-      - environment
+  # historical-3:
+  #   image: apache/druid:29.0.0
+  #   container_name: historical-3
+  #   volumes:
+  #     # - #druid_shared:/opt/shared
+  #     - historical_var_3:/opt/druid/var
+  #   depends_on: 
+  #     - zookeeper
+  #     - postgres
+  #     - coordinator
+  #   ports:
+  #     - "8088:8083"
+  #   command:
+  #     - historical
+  #   env_file:
+  #     - environment
 
-  historical-4:
-    image: apache/druid:29.0.0
-    container_name: historical-4
-    volumes:
-      # - #druid_shared:/opt/shared
-      - historical_var_4:/opt/druid/var
-    depends_on: 
-      - zookeeper
-      - postgres
-      - coordinator
-    ports:
-      - "8089:8083"
-    command:
-      - historical
-    env_file:
-      - environment
+  # historical-4:
+  #   image: apache/druid:29.0.0
+  #   container_name: historical-4
+  #   volumes:
+  #     # - #druid_shared:/opt/shared
+  #     - historical_var_4:/opt/druid/var
+  #   depends_on: 
+  #     - zookeeper
+  #     - postgres
+  #     - coordinator
+  #   ports:
+  #     - "8089:8083"
+  #   command:
+  #     - historical
+  #   env_file:
+  #     - environment
     
   middlemanager:
     image: apache/druid:29.0.0
