@@ -11,3 +11,6 @@ data_generation/*_topic.txt
 data_generation/*.csv
 data_generation/*.csv
 pinot-setup/pinot_scripts/*.csv
+clickhouse-multinode-setup/clickhouse_scripts/*.csv
+druid/*.csv
+starrocks/starrocks_scripts/*.csv
