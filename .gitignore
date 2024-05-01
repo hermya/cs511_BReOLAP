@@ -9,3 +9,5 @@ starrocks/assets/
 clickhouse-multinode-setup/clickhouse_scripts/values.csv
 data_generation/*_topic.txt
 data_generation/*.csv
+data_generation/*.csv
+pinot-setup/pinot_scripts/*.csv
