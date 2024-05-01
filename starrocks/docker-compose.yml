@@ -89,7 +89,7 @@ services:
       - prom_data:/prometheus
     networks:
       network:
-        ipv4_address: 172.11.0.4
+        ipv4_address: 172.11.0.11
 
   grafana:
     image: grafana/grafana:latest
