@@ -281,7 +281,7 @@ counterparties = [
     "Credit Suisse Group AG",
     "UBS Group AG",
     "BNP Paribas SA",
-    "Société Générale SA",
+    "Societe Generale SA",
     "Nomura Holdings Inc.",
     "Mizuho Financial Group Inc.",
     "The Blackstone Group Inc.",
