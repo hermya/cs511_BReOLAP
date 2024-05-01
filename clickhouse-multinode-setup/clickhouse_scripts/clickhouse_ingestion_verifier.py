@@ -15,10 +15,10 @@ try:
     while True:
         result = client.command('''
             SELECT
-            (SELECT COUNT(*) FROM assets) AS asset_count,
-            (SELECT COUNT(*) FROM asset_risk) AS asset_risk_count,
-            (SELECT COUNT(*) FROM liabilities) AS liabilities_count,
-            (SELECT COUNT(*) FROM transactions) AS transactions_count;
+            (SELECT COUNT(*) FROM asset_topic) AS asset_count,
+            (SELECT COUNT(*) FROM risk_topic) AS asset_risk_count,
+            (SELECT COUNT(*) FROM liabilities_topic) AS liabilities_count,
+            (SELECT COUNT(*) FROM transactions_topic) AS transactions_count;
         ''')
 
         # Create a record with timestamp
@@ -29,6 +29,7 @@ try:
         csvstore.append(record)
 
         print(record)
+        time.sleep(1)
 
 except KeyboardInterrupt:
     print("Monitoring stopped by user.")
