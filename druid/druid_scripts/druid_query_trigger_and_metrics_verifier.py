@@ -17,12 +17,12 @@ csvstore = []
 # for i in range(110):
 #     st = time.time()
 #     curs.execute('''
-#     SELECT assets.asset_name, assets.asset_class, counterparties_topic.counterparty_uuid, SUM(transactions.transaction_amount)
-#         FROM transactions
-#         JOIN counterparties_topic ON transactions.counterparty_uuid = counterparties_topic.counterparty_uuid
-#         JOIN assets ON transactions.asset_linked = assets.asset_uuid
-#         WHERE transactions.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
-#         GROUP BY assets.asset_name, assets.asset_class, counterparties_topic.counterparty_uuid
+#     SELECT asset_topic.asset_name, asset_topic.asset_class, counterparties_topic.counterparty_uuid, SUM(transactions_topic.transaction_amount)
+#         FROM transactions_topic
+#         JOIN counterparties_topic ON transactions_topic.counterparty_uuid = counterparties_topic.counterparty_uuid
+#         JOIN asset_topic ON transactions_topic.asset_linked = asset_topic.asset_uuid
+#         WHERE transactions_topic.transaction_type IN ('Payment','Withdrawal','InterestPayment','LoanRepayment')
+#         GROUP BY asset_topic.asset_name, asset_topic.asset_class, counterparties_topic.counterparty_uuid
 #     ''')
 #     et = time.time() - st
 #     if i > 10:
@@ -45,11 +45,11 @@ for i in range(110):
                     THEN asset_market_value * asset_quantity
                     ELSE 0
                 END) AS SumCapital,
-                SUM(assets.asset_market_value * assets.asset_quantity * asset_risk.risk_rating) AS TotalRiskAdjustedValue
+                SUM(asset_topic.asset_market_value * asset_topic.asset_quantity * risk_topic.risk_rating) AS TotalRiskAdjustedValue
             FROM
-                assets
+                asset_topic
             LEFT JOIN
-                asset_risk ON assets.asset_uuid = asset_risk.asset_uuid
+                risk_topic ON asset_topic.asset_uuid = risk_topic.asset_uuid
         ) AS results
     ''')
     et = time.time() - st
@@ -66,7 +66,7 @@ for i in range(110):
     curs.execute('''
         SELECT counterparty_uuid,
         COUNT(*) AS transaction_count
-        FROM transactions
+        FROM transactions_topic
         GROUP BY counterparty_uuid
         ORDER BY transaction_count DESC
         LIMIT 10
@@ -85,8 +85,8 @@ for i in range(110):
     curs.execute('''
         SELECT
             SUM(asset_market_value * asset_quantity) /
-            (SELECT SUM(liability_amount) FROM liabilities) AS Ratio
-        FROM assets
+            (SELECT SUM(liability_amount) FROM liabilities_topic) AS Ratio
+        FROM asset_topic
         WHERE asset_class IN ('Stocks', 'Gold Bonds')
     ''')
     et = time.time() - st
@@ -103,10 +103,10 @@ for i in range(110):
     curs.execute('''
         SELECT
         (SELECT SUM(asset_market_value * asset_quantity)
-        FROM assets
+        FROM asset_topic
         WHERE asset_class IN ('Stocks', 'Gold Bonds','Cash')) /
         (SELECT SUM(transaction_amount)
-        FROM transactions
+        FROM transactions_topic
         WHERE MILLIS_TO_TIMESTAMP(CAST(transaction_due_date*1000 AS BIGINT)) BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '30' DAY)
         AND transaction_type IN ('Payment', 'Withdrawal', 'LoanRepayment')
         AND transaction_confirmed = 1) AS LiquidityCoverageRatio  
@@ -133,7 +133,7 @@ for i in range(110):
                     MILLIS_TO_TIMESTAMP(CAST(__time AS BIGINT)) AS val_date,
                     SUM(asset_market_value) AS asset_market_value,
                     (SUM(asset_market_value - asset_cost) - LAG(SUM(asset_market_value - asset_cost)) OVER (ORDER BY MILLIS_TO_TIMESTAMP(CAST(__time AS BIGINT)))) AS daily_profit_loss
-                FROM assets
+                FROM asset_topic
                 GROUP BY MILLIS_TO_TIMESTAMP(CAST(__time AS BIGINT))
         ) AS daily_data
         ''')
@@ -160,9 +160,9 @@ for i in range(110):
                 END) AS SumCapital,
                 SUM(a.asset_market_value * a.asset_quantity * r.risk_rating) AS TotalRiskAdjustedValue
             FROM
-                assets a
+                asset_topic a
             LEFT JOIN
-                asset_risk r ON a.asset_uuid = r.asset_uuid
+                risk_topic r ON a.asset_uuid = r.asset_uuid
         ) AS results
     ''')
     et = time.time() - st
@@ -190,7 +190,7 @@ FROM
        asset_name, asset_market_value, FLOOR(__time TO DAY),
     ROW_NUMBER() OVER w AS rn
      FROM 
-         assets
+         asset_topic
      WHERE 
          asset_name IN ('AAPL', 'GOOGL')
     GROUP BY "asset_name", FLOOR(__time TO DAY) , "asset_market_value"
@@ -201,7 +201,7 @@ JOIN
         asset_name, asset_market_value, FLOOR(__time TO DAY),
     ROW_NUMBER() OVER w AS rn
      FROM 
-         assets
+         asset_topic
      WHERE 
          asset_name IN ('AAPL', 'GOOGL')
     GROUP BY "asset_name", FLOOR(__time TO DAY), asset_market_value
@@ -227,7 +227,7 @@ for i in range(110):
         SUM(CASE WHEN transaction_confirmed = 1 THEN 1 ELSE 0 END) AS confirmed_count,
         COUNT(*) AS total_count,
         SUM(CASE WHEN transaction_confirmed = 1 THEN 1 ELSE 0 END) / COUNT(*) AS confirmation_rate
-        FROM transactions
+        FROM transactions_topic
         GROUP BY transaction_category
         ORDER BY confirmation_rate DESC
     ''')
