@@ -12,7 +12,7 @@ try:
         os.system(" ".join(['curl', '-s', '-o', 'asset_topic.txt', '-X', 'GET', get_kafdrop_api('asset_topic')]))
         os.system(" ".join(['curl', '-s', '-o', 'liabilities_topic.txt', '-X', 'GET', get_kafdrop_api('liabilities_topic')]))
         os.system(" ".join(['curl', '-s', '-o', 'risk_topic.txt', '-X', 'GET', get_kafdrop_api('risk_topic')]))
-        os.system(" ".join(['curl', '-s', '-o', 'transactions_topic.txt', '-X', 'GET', get_kafdrop_api('transaction_topic')]))
+        os.system(" ".join(['curl', '-s', '-o', 'transactions_topic.txt', '-X', 'GET', get_kafdrop_api('transactions_topic')]))
 
         timestamp = time.time_ns()
         a_count = os.popen(" ".join(['cat', 'asset_topic.txt', '|', 'grep', '-oP', """'(?<=partitionSize"\>).*?(?=\<)'"""])).read().strip()
@@ -25,7 +25,7 @@ try:
             csv_rows.append(",".join(csv_row))
         else:
             print("Problematic input", csv_row)
-        time.sleep(0.5)
+        time.sleep(1)
 
 except KeyboardInterrupt:
     with open('ingestion_result.csv', 'w') as file:
