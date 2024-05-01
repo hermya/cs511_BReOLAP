@@ -10,7 +10,7 @@ try:
     while True:
         curs.execute('''
             SELECT
-            (SELECT COUNT(*) FROM assets) AS asset_count,
+            (SELECT COUNT(*) FROM asset) AS asset_count,
             (SELECT COUNT(*) FROM asset_risk) AS asset_risk_count,
             (SELECT COUNT(*) FROM liabilities) AS liabilities_count,
             (SELECT COUNT(*) FROM transactions) AS transactions_count;
@@ -27,6 +27,7 @@ try:
         csvstore.append(record)
         
         print(record)
+        time.sleep(0.5)
 
 except KeyboardInterrupt:
     print("Monitoring stopped by user.")
