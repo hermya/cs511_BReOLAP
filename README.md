@@ -1,6 +1,6 @@
 # BReOLAP: Your Fintech Realtime-OLAP Solution 🚀
 
-Fintech organizations require an OLAP solution that can resolve complex analytical queries in milliseconds, enabling them to make informed, split-second decisions. Choosing the right Realtime-OLAP is crucial, and **BReOLAP** is here to guide you through selecting the best option for your specific needs!
+Fintech organizations require an OLAP solution that can resolve complex analytical queries in milliseconds, enabling them to make informed, split-second decisions. Choosing the right Realtime-OLAP is crucial, and **BReOLAP** is here to guide you through selecting the best option for your specific needs! Check out **[this](https://lnkd.in/gQDAbzTF)** formal report for our end-to-end scientific study
 
 ----
 ## 🎯 Purpose
